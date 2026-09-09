@@ -48,7 +48,14 @@ function pathnameLocale(pathname: string): Locale | null {
   return hasLocale(segment) ? segment : null;
 }
 
-function persistLocale(response: NextResponse, locale: Locale): NextResponse {
+function persistLocale(
+  response: NextResponse,
+  locale: Locale,
+  current: string | undefined,
+): NextResponse {
+  if (current === locale) {
+    return response;
+  }
   response.cookies.set(LOCALE_COOKIE, locale, {
     path: "/",
     maxAge: 60 * 60 * 24 * 365,
@@ -60,12 +67,13 @@ function persistLocale(response: NextResponse, locale: Locale): NextResponse {
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const locale = pathnameLocale(pathname);
+  const cookieLocale = request.cookies.get(LOCALE_COOKIE)?.value;
 
   if (!locale) {
     const nextLocale = negotiateLocale(request);
     const url = request.nextUrl.clone();
     url.pathname = `/${nextLocale}${pathname === "/" ? "" : pathname}`;
-    return persistLocale(NextResponse.redirect(url), nextLocale);
+    return persistLocale(NextResponse.redirect(url), nextLocale, cookieLocale);
   }
 
   const pathWithoutLocale = pathname.slice(locale.length + 1) || "/";
@@ -76,12 +84,12 @@ export function middleware(request: NextRequest) {
   if (isProtected && !hasSessionCookie(request)) {
     const login = new URL(`/${locale}/login`, request.url);
     login.searchParams.set("callbackUrl", pathname);
-    return persistLocale(NextResponse.redirect(login), locale);
+    return persistLocale(NextResponse.redirect(login), locale, cookieLocale);
   }
 
   const headers = new Headers(request.headers);
   headers.set("x-pathname", pathname);
-  return persistLocale(NextResponse.next({ request: { headers } }), locale);
+  return persistLocale(NextResponse.next({ request: { headers } }), locale, cookieLocale);
 }
 
 export const config = {

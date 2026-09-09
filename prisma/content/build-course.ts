@@ -67,7 +67,7 @@ function sentenceOf(
 
 function tokensOf(value: string): string[] {
   return value
-    .replace(/[?!.,։]/g, "")
+    .replace(/[?!.,։՞՝;]/g, "")
     .split(/\s+/)
     .filter(Boolean);
 }

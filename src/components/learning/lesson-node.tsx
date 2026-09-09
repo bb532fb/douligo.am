@@ -52,7 +52,11 @@ export function LessonNode({ lesson, index, locale, dict }: LessonNodeProps) {
   }
 
   return (
-    <Link href={withLocale(locale, `/lesson/${lesson.id}`)} className="block focus-visible:rounded-3xl">
+    <Link
+      href={withLocale(locale, `/lesson/${lesson.id}`)}
+      prefetch={current}
+      className="block focus-visible:rounded-3xl"
+    >
       {node}
     </Link>
   );

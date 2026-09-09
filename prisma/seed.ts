@@ -3,6 +3,7 @@ import { hashPassword } from "../src/lib/auth/password";
 import { prisma } from "../src/lib/db/prisma";
 import { buildCourseContent } from "./content/build-course";
 import { COURSE_SEEDS } from "./content/courses";
+import { writeCourseContent } from "./content/persist";
 
 const ACHIEVEMENTS: Array<{
   type: AchievementType;
@@ -56,7 +57,6 @@ const DEMO_USERS = [
 
 async function seedCourses() {
   for (const courseSeed of COURSE_SEEDS) {
-    const built = buildCourseContent(courseSeed);
     const course = await prisma.course.upsert({
       where: { slug: courseSeed.slug },
       update: {
@@ -66,66 +66,7 @@ async function seedCourses() {
       },
       create: courseSeed,
     });
-
-    const wordIds = new Map<string, string>();
-    for (const word of built.words) {
-      const saved = await prisma.vocabularyWord.create({
-        data: {
-          courseId: course.id,
-          sourceText: word.sourceText,
-          targetText: word.targetText,
-          pronunciation: word.pronunciation,
-          exampleSentence: word.exampleSentence,
-        },
-      });
-      wordIds.set(word.key, saved.id);
-    }
-
-    for (const unit of built.units) {
-      const savedUnit = await prisma.unit.create({
-        data: {
-          courseId: course.id,
-          title: unit.title,
-          description: unit.description,
-          order: unit.order,
-          level: unit.level,
-        },
-      });
-
-      for (const lesson of unit.lessons) {
-        const savedLesson = await prisma.lesson.create({
-          data: {
-            unitId: savedUnit.id,
-            title: lesson.title,
-            description: lesson.description,
-            order: lesson.order,
-            questions: {
-              create: lesson.questions.map((question) => ({
-                type: question.type,
-                prompt: question.prompt,
-                explanation: question.explanation,
-                order: question.order,
-                acceptedAnswers: question.acceptedAnswers,
-                payload: question.payload ?? undefined,
-                options: {
-                  create: question.options,
-                },
-              })),
-            },
-          },
-        });
-
-        for (const key of lesson.wordKeys) {
-          const vocabularyWordId = wordIds.get(key);
-          if (!vocabularyWordId) {
-            continue;
-          }
-          await prisma.lessonVocabulary.create({
-            data: { lessonId: savedLesson.id, vocabularyWordId },
-          });
-        }
-      }
-    }
+    await writeCourseContent(course.id, buildCourseContent(courseSeed));
   }
 }
 

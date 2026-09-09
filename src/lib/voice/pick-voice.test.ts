@@ -6,10 +6,11 @@ describe("pickVoice", () => {
     { lang: "en-US", name: "Google US English" },
     { lang: "ru-RU", name: "Google русский" },
     { lang: "hy-AM", name: "Microsoft Syuzanna" },
+    { lang: "hy-AM", name: "Microsoft Anahit Online (Natural)" },
   ];
 
-  it("prefers an exact language match", () => {
-    expect(pickVoice(voices, "hy-AM")?.name).toBe("Microsoft Syuzanna");
+  it("prefers a neural voice for the exact language", () => {
+    expect(pickVoice(voices, "hy-AM")?.name).toBe("Microsoft Anahit Online (Natural)");
     expect(pickVoice(voices, "ru-RU")?.lang).toBe("ru-RU");
   });
 

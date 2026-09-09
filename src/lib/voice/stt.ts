@@ -12,8 +12,10 @@ type RecognitionLike = {
   onend: (() => void) | null;
 };
 
+type RecognitionResult = ArrayLike<{ transcript: string }> & { isFinal?: boolean };
+
 type RecognitionEvent = {
-  results: ArrayLike<ArrayLike<{ transcript: string }>>;
+  results: ArrayLike<RecognitionResult>;
 };
 
 type RecognitionCtor = new () => RecognitionLike;
@@ -28,38 +30,72 @@ export function canListen(): boolean {
 }
 
 export function startListening(lang: SpeechLang): ListenSession {
+  return listenWith([lang, lang.slice(0, 2)]);
+}
+
+function listenWith(langs: string[]): ListenSession {
   const Ctor = recognitionCtor();
-  if (!Ctor) {
+  const lang = langs[0];
+  if (!Ctor || !lang) {
     throw new Error("unsupported");
   }
 
-  const recognition = new Ctor();
-  recognition.lang = lang;
-  recognition.interimResults = false;
-  recognition.continuous = false;
-  recognition.maxAlternatives = 3;
-
-  let settled = false;
+  const recognition = configureRecognition(new Ctor(), lang);
+  const fallback = langs.slice(1);
   const result = new Promise<string[]>((resolve, reject) => {
-    recognition.onresult = (event) => {
-      settled = true;
-      resolve(transcriptsOf(event));
-    };
-    recognition.onerror = (event) => {
-      settled = true;
-      reject(new Error(event.error));
-    };
-    recognition.onend = () => {
-      if (!settled) {
-        reject(new Error("empty"));
-      }
-    };
+    bindRecognition(recognition, fallback, resolve, reject);
   });
-
   recognition.start();
-  return {
-    stop: () => recognition.abort(),
-    result,
+  return { stop: () => recognition.abort(), result };
+}
+
+function configureRecognition(recognition: RecognitionLike, lang: string): RecognitionLike {
+  recognition.lang = lang;
+  recognition.interimResults = true;
+  recognition.continuous = false;
+  recognition.maxAlternatives = 5;
+  return recognition;
+}
+
+function bindRecognition(
+  recognition: RecognitionLike,
+  fallback: string[],
+  resolve: (value: string[]) => void,
+  reject: (error: Error) => void,
+): void {
+  let settled = false;
+  let heard: string[] = [];
+  recognition.onresult = (event) => {
+    heard = transcriptsOf(event);
+    const last = event.results[event.results.length - 1];
+    if (last?.isFinal && heard.length > 0 && !settled) {
+      settled = true;
+      recognition.abort();
+      resolve(heard);
+    }
+  };
+  recognition.onerror = (event) => {
+    if (settled) {
+      return;
+    }
+    if (event.error === "language-not-supported" && fallback.length > 0) {
+      settled = true;
+      window.setTimeout(() => listenWith(fallback).result.then(resolve, reject), 0);
+      return;
+    }
+    settled = true;
+    reject(new Error(event.error));
+  };
+  recognition.onend = () => {
+    if (settled) {
+      return;
+    }
+    settled = true;
+    if (heard.length > 0) {
+      resolve(heard);
+      return;
+    }
+    reject(new Error("empty"));
   };
 }
 

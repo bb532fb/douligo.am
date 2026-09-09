@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { LocaleSwitcher } from "@/components/i18n/locale-switcher";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -41,12 +40,10 @@ function HomeHeader({ lang, dict }: { lang: Locale; dict: Dictionary }) {
       <Logo />
       <div className="flex flex-wrap items-center justify-end gap-2">
         <LocaleSwitcher />
-        <Link href={withLocale(lang, "/login")}>
-          <Button variant="ghost">{dict.auth.login}</Button>
-        </Link>
-        <Link href={withLocale(lang, "/register")}>
-          <Button>{dict.auth.register}</Button>
-        </Link>
+        <Button variant="ghost" href={withLocale(lang, "/login")}>
+          {dict.auth.login}
+        </Button>
+        <Button href={withLocale(lang, "/register")}>{dict.auth.register}</Button>
       </div>
     </header>
   );
@@ -62,9 +59,9 @@ function HomeHero({ lang, dict }: { lang: Locale; dict: Dictionary }) {
         <h1 className="text-4xl font-black leading-tight sm:text-6xl">Lezu</h1>
         <p className="text-xl font-bold text-ink-soft">{dict.home.tagline}</p>
         <p className="max-w-lg font-semibold text-ink-soft">{dict.home.lead}</p>
-        <Link href={withLocale(lang, "/register")}>
-          <Button className="w-full sm:w-auto">{dict.auth.register} ✨</Button>
-        </Link>
+        <Button className="w-full sm:w-auto" href={withLocale(lang, "/register")}>
+          {dict.auth.register} ✨
+        </Button>
       </div>
       <div className="flex justify-center">
         <Mascot mood="celebrate" size={240} />

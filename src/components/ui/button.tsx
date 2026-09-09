@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes } from "react";
+import Link from "next/link";
 import { cn } from "@/lib/utils/cn";
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
@@ -6,6 +7,7 @@ type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
   loading?: boolean;
+  href?: string;
 };
 
 const variants: Record<ButtonVariant, string> = {
@@ -20,23 +22,29 @@ export function Button({
   variant = "primary",
   loading = false,
   disabled,
+  href,
   children,
   ...props
 }: ButtonProps) {
-  const isGhost = variant === "ghost";
+  const classes = cn(
+    "tap-target inline-flex items-center justify-center rounded-2xl px-6 text-base font-extrabold tracking-wide",
+    variant !== "ghost" && "pressable border-2",
+    variants[variant],
+    className,
+  );
+  const content = loading ? "..." : children;
+
+  if (href) {
+    return (
+      <Link href={href} className={classes} aria-disabled={disabled || loading} prefetch>
+        {content}
+      </Link>
+    );
+  }
 
   return (
-    <button
-      className={cn(
-        "tap-target inline-flex items-center justify-center rounded-2xl px-6 text-base font-extrabold tracking-wide",
-        !isGhost && "pressable border-2",
-        variants[variant],
-        className,
-      )}
-      disabled={disabled || loading}
-      {...props}
-    >
-      {loading ? "..." : children}
+    <button className={classes} disabled={disabled || loading} {...props}>
+      {content}
     </button>
   );
 }

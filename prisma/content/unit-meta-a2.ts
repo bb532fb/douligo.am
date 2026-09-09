@@ -4,92 +4,40 @@ export const UNIT_META_A2: Record<
   A2UnitKey,
   Record<string, { title: string; description: string; lessons: [string, string] }>
 > = {
-  food: {
-    "hy-en": {
-      title: "Սնունդ",
-      description: "Ուտելիք, խմիչք և ռեստորան",
-      lessons: ["Ճանաչում", "Գործածում"],
-    },
-    "en-hy": {
-      title: "Food",
-      description: "Food, drink, and eating out",
-      lessons: ["Recognize", "Use"],
-    },
-    "ru-hy": {
-      title: "Еда",
-      description: "Еда, напитки и ресторан",
-      lessons: ["Узнавание", "Применение"],
-    },
-    "hy-ru": {
-      title: "Սնունդ",
-      description: "Ուտելիք, խմիչք և ռեստորան",
-      lessons: ["Ճանաչում", "Գործածում"],
-    },
-  },
   routine: {
-    "hy-en": {
-      title: "Առօրյա",
-      description: "Այսօր, հիմա և օրվա ժամեր",
-      lessons: ["Ճանաչում", "Գործածում"],
-    },
-    "en-hy": {
-      title: "Daily life",
-      description: "Today, now, and times of day",
-      lessons: ["Recognize", "Use"],
-    },
-    "ru-hy": {
-      title: "Распорядок",
-      description: "Сегодня, сейчас и время суток",
-      lessons: ["Узнавание", "Применение"],
-    },
-    "hy-ru": {
-      title: "Առօրյա",
-      description: "Այսօր, հիմա և օրվա ժամեր",
-      lessons: ["Ճանաչում", "Գործածում"],
-    },
+    "hy-en": { title: "Առօրյա", description: "Այսօր, հաճախականություն և օրվա ժամեր", lessons: ["Ճանաչում", "Գործածում"] },
+    "en-hy": { title: "Daily life", description: "Today, frequency, and times of day", lessons: ["Recognize", "Use"] },
+    "ru-hy": { title: "Распорядок", description: "Сегодня, частота и время суток", lessons: ["Узнавание", "Применение"] },
+    "hy-ru": { title: "Առօրյա", description: "Այսօր, հաճախականություն և օրվա ժամեր", lessons: ["Ճանաչում", "Գործածում"] },
   },
   city: {
-    "hy-en": {
-      title: "Քաղաք",
-      description: "Տուն, դպրոց, խանութ և փողոց",
-      lessons: ["Ճանաչում", "Գործածում"],
-    },
-    "en-hy": {
-      title: "The city",
-      description: "Home, school, shops, and streets",
-      lessons: ["Recognize", "Use"],
-    },
-    "ru-hy": {
-      title: "Город",
-      description: "Дом, школа, магазин и улица",
-      lessons: ["Узнавание", "Применение"],
-    },
-    "hy-ru": {
-      title: "Քաղաք",
-      description: "Տուն, դպրոց, խանութ և փողոց",
-      lessons: ["Ճանաչում", "Գործածում"],
-    },
+    "hy-en": { title: "Քաղաք", description: "Փողոց, ուղղություն, մոտ և հեռու", lessons: ["Ճանաչում", "Գործածում"] },
+    "en-hy": { title: "The city", description: "Streets, directions, near and far", lessons: ["Recognize", "Use"] },
+    "ru-hy": { title: "Город", description: "Улица, направление, близко и далеко", lessons: ["Узнавание", "Применение"] },
+    "hy-ru": { title: "Քաղաք", description: "Փողոց, ուղղություն, մոտ և հեռու", lessons: ["Ճանաչում", "Գործածում"] },
   },
   travel: {
-    "hy-en": {
-      title: "Ճամփորդություն",
-      description: "Ավտոբուս, տոմս, հյուրանոց",
-      lessons: ["Ճանաչում", "Գործածում"],
-    },
-    "en-hy": {
-      title: "Travel",
-      description: "Bus, tickets, hotel, and airport",
-      lessons: ["Recognize", "Use"],
-    },
-    "ru-hy": {
-      title: "Поездки",
-      description: "Автобус, билет, гостиница",
-      lessons: ["Узнавание", "Применение"],
-    },
-    "hy-ru": {
-      title: "Ճամփորդություն",
-      description: "Ավտոբուս, տոմս, հյուրանոց",
-      lessons: ["Ճանաչում", "Գործածում"],
-    },
+    "hy-en": { title: "Ճամփորդություն", description: "Տոմս, կայարան, ավտոբուս և հյուրանոց", lessons: ["Ճանաչում", "Գործածում"] },
+    "en-hy": { title: "Travel", description: "Tickets, station, bus, and hotel", lessons: ["Recognize", "Use"] },
+    "ru-hy": { title: "Поездки", description: "Билет, вокзал, автобус и гостиница", lessons: ["Узнавание", "Применение"] },
+    "hy-ru": { title: "Ճամփորդություն", description: "Տոմս, կայարան, ավտոբուս և հյուրանոց", lessons: ["Ճանաչում", "Գործածում"] },
+  },
+  shopping: {
+    "hy-en": { title: "Գնումներ", description: "Գնել, գին, էժան և թանկ", lessons: ["Ճանաչում", "Գործածում"] },
+    "en-hy": { title: "Shopping", description: "Buy, price, cheap, and expensive", lessons: ["Recognize", "Use"] },
+    "ru-hy": { title: "Покупки", description: "Купить, цена, дешёвый и дорогой", lessons: ["Узнавание", "Применение"] },
+    "hy-ru": { title: "Գնումներ", description: "Գնել, գին, էժան և թանկ", lessons: ["Ճանաչում", "Գործածում"] },
+  },
+  past: {
+    "hy-en": { title: "Անցյալ", description: "Երեկ, գնացի, էի և տեսա", lessons: ["Ճանաչում", "Գործածում"] },
+    "en-hy": { title: "The past", description: "Yesterday, I went, I was, I saw", lessons: ["Recognize", "Use"] },
+    "ru-hy": { title: "Прошлое", description: "Вчера, я пошёл, я был, я видел", lessons: ["Узнавание", "Применение"] },
+    "hy-ru": { title: "Անցյալ", description: "Երեկ, գնացի, էի և տեսա", lessons: ["Ճանաչում", "Գործածում"] },
+  },
+  future: {
+    "hy-en": { title: "Ապագա", description: "Վաղը, կգնամ, կարող եմ և պետք է", lessons: ["Ճանաչում", "Գործածում"] },
+    "en-hy": { title: "The future", description: "Tomorrow, I will go, I can, I need", lessons: ["Recognize", "Use"] },
+    "ru-hy": { title: "Будущее", description: "Завтра, я пойду, я могу, мне нужно", lessons: ["Узнавание", "Применение"] },
+    "hy-ru": { title: "Ապագա", description: "Վաղը, կգնամ, կարող եմ և պետք է", lessons: ["Ճանաչում", "Գործածում"] },
   },
 };

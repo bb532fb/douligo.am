@@ -20,10 +20,16 @@ export type LessonResult = {
   wordsLearned: number;
 };
 
-export function useLessonPlayer(lessonId: string) {
-  const [attemptId, setAttemptId] = useState<string | null>(null);
-  const [questions, setQuestions] = useState<PublicQuestion[]>([]);
-  const [index, setIndex] = useState(0);
+export type LessonSession = {
+  attemptId: string;
+  resumeIndex: number;
+  questions: PublicQuestion[];
+};
+
+export function useLessonPlayer(lessonId: string, initial?: LessonSession | null) {
+  const [attemptId, setAttemptId] = useState<string | null>(initial?.attemptId ?? null);
+  const [questions, setQuestions] = useState<PublicQuestion[]>(initial?.questions ?? []);
+  const [index, setIndex] = useState(initial?.resumeIndex ?? 0);
   const [feedback, setFeedback] = useState<LessonFeedback | null>(null);
   const [result, setResult] = useState<LessonResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -42,6 +48,7 @@ export function useLessonPlayer(lessonId: string) {
     }
     setAttemptId(response.data.attemptId);
     setQuestions(response.data.questions);
+    setIndex(response.data.resumeIndex);
   }
 
   async function onSubmit(answer: AnswerPayload) {

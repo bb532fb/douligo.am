@@ -1,34 +1,33 @@
-import { prisma } from "../src/lib/db/prisma";
-import { buildCourseContent } from "./content/build-course";
-import { COURSE_SEEDS } from "./content/courses";
-import type { BuiltLesson, BuiltUnit, BuiltWord } from "./content/build-course";
+import { prisma } from "../../src/lib/db/prisma";
+import type { BuiltLesson, BuiltUnit, BuiltWord } from "./build-course";
 
-async function appendA2IfMissing() {
-  for (const courseSeed of COURSE_SEEDS) {
-    const course = await prisma.course.findUnique({ where: { slug: courseSeed.slug } });
-    if (!course) {
-      continue;
-    }
+export async function clearLearningContent() {
+  await prisma.userAnswer.deleteMany();
+  await prisma.lessonAttempt.deleteMany();
+  await prisma.lessonVocabulary.deleteMany();
+  await prisma.userVocabulary.deleteMany();
+  await prisma.questionOption.deleteMany();
+  await prisma.question.deleteMany();
+  await prisma.lessonProgress.deleteMany();
+  await prisma.lesson.deleteMany();
+  await prisma.unit.deleteMany();
+  await prisma.vocabularyWord.deleteMany();
+  await prisma.userProgress.updateMany({
+    data: {
+      currentUnitId: null,
+      currentLessonId: null,
+      totalLessonsCompleted: 0,
+      totalWordsLearned: 0,
+    },
+  });
+}
 
-    await prisma.course.update({
-      where: { id: course.id },
-      data: { description: courseSeed.description },
-    });
-
-    const hasA2 = await prisma.unit.findFirst({ where: { courseId: course.id, level: "A2" } });
-    if (hasA2) {
-      continue;
-    }
-
-    const built = buildCourseContent(courseSeed);
-    const units = built.units.filter((unit) => unit.level === "A2");
-    const wordKeys = new Set(units.flatMap((unit) => unit.lessons.flatMap((lesson) => lesson.wordKeys)));
-    const wordIds = await createWords(
-      course.id,
-      built.words.filter((word) => wordKeys.has(word.key)),
-    );
-    await createUnits(course.id, units, wordIds);
-  }
+export async function writeCourseContent(
+  courseId: string,
+  built: { units: BuiltUnit[]; words: BuiltWord[] },
+) {
+  const wordIds = await createWords(courseId, built.words);
+  await createUnits(courseId, built.units, wordIds);
 }
 
 async function createWords(courseId: string, words: BuiltWord[]) {
@@ -96,13 +95,3 @@ async function createLesson(unitId: string, lesson: BuiltLesson, wordIds: Map<st
     });
   }
 }
-
-appendA2IfMissing()
-  .then(async () => {
-    await prisma.$disconnect();
-  })
-  .catch(async (error: unknown) => {
-    console.error(error);
-    await prisma.$disconnect();
-    process.exit(1);
-  });

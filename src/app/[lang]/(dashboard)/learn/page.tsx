@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CoursePath } from "@/components/learning/course-path";
 import { LevelPicker } from "@/components/learning/level-picker";
@@ -102,11 +101,13 @@ function LearnView({
         <p className="text-lg font-black">{dict.learn.continueLearning}</p>
         <p className="font-semibold text-white/90">{data.current?.title ?? dict.learn.courseComplete}</p>
         {data.current ? (
-          <Link href={withLocale(lang, `/lesson/${data.current.id}`)}>
-            <Button variant="secondary" className="w-full sm:w-auto">
-              {dict.learn.continueLesson}
-            </Button>
-          </Link>
+          <Button
+            variant="secondary"
+            className="w-full sm:w-auto"
+            href={withLocale(lang, `/lesson/${data.current.id}`)}
+          >
+            {dict.learn.continueLesson}
+          </Button>
         ) : null}
         <ProgressBar
           label={dict.learn.dailyGoal}

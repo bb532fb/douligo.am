@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  serverExternalPackages: ["ws", "redis"],
+  turbopack: {
+    root: process.cwd(),
+  },
 };
 
 export default nextConfig;

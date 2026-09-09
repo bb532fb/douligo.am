@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -11,30 +12,47 @@ import { useI18n } from "@/components/i18n/i18n-provider";
 import { interpolate } from "@/i18n/interpolate";
 import { withLocale } from "@/i18n/path";
 import { speechLangFromCode, speechLangFromLocale } from "@/lib/voice/locale";
-import { primeSpeech } from "@/lib/voice/tts";
+import { prefetchSpeech, primeSpeech } from "@/lib/voice/tts";
 import type { AnswerPayload, PublicQuestion } from "@/types/learning";
 import { QuestionPrompt } from "@/components/lesson/question-prompt";
 import {
   useLessonPlayer,
   type LessonFeedback,
   type LessonResult,
+  type LessonSession,
 } from "@/components/lesson/use-lesson-player";
 
 type LessonPlayerProps = {
   lessonId: string;
   lessonTitle: string;
+  initial?: LessonSession | null;
+  initialError?: string | null;
 };
 
-export function LessonPlayer({ lessonId, lessonTitle }: LessonPlayerProps) {
+export function LessonPlayer({ lessonId, lessonTitle, initial, initialError }: LessonPlayerProps) {
   const router = useRouter();
   const { locale } = useI18n();
-  const player = useLessonPlayer(lessonId);
+  const player = useLessonPlayer(lessonId, initial);
+
+  useEffect(() => {
+    const current = player.question;
+    if (!current) {
+      return;
+    }
+    primeSpeech();
+    const next = player.questions[player.index + 1];
+    if (next) {
+      prefetchSpeech(next.prompt, speechLangFromCode(next.sourceLanguage));
+    }
+  }, [player.index, player.question, player.questions]);
+
+  const error = player.error ?? initialError ?? null;
 
   return (
     <div className="space-y-4">
-      {player.error ? (
+      {error ? (
         <p className="rounded-2xl bg-rose-soft px-4 py-3 font-bold text-rose" role="alert">
-          {player.error}
+          {error}
         </p>
       ) : null}
       {player.result ? (

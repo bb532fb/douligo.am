@@ -1,10 +1,7 @@
 import { AppNav } from "@/components/navigation/app-nav";
 import { LocaleSwitcher } from "@/components/i18n/locale-switcher";
-import { requireUser } from "@/lib/auth/session";
 
-export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  await requireUser();
-
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-full">
       <AppNav />

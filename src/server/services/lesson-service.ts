@@ -11,6 +11,7 @@ import { lessonRepository } from "@/server/repositories/lesson-repository";
 import { progressRepository } from "@/server/repositories/progress-repository";
 import { vocabularyRepository } from "@/server/repositories/vocabulary-repository";
 import { gamificationService } from "@/server/services/gamification-service";
+import { assertUnlocked, resolveAttemptId, resumeIndexOf } from "@/server/services/lesson-start";
 
 export const lessonService = {
   async getLearningPath(userId: string, courseId: string): Promise<PathUnit[]> {
@@ -43,71 +44,64 @@ export const lessonService = {
   },
 
   async startLesson(userId: string, lessonId: string) {
-    const lesson = await lessonRepository.findById(lessonId);
+    const lesson = await lessonRepository.findForPlay(lessonId);
     if (!lesson) {
       throw new AppError("NOT_FOUND", APP_ERRORS.notFound, 404);
     }
 
-    const ordered = await lessonRepository.listCourseLessons(lesson.unit.courseId);
-    const completed = await progressRepository.listCompletedLessonIds(userId, lesson.unit.courseId);
-    const progress = await progressRepository.getCourseProgress(userId, lesson.unit.courseId);
-    const gated = ordered.map((item) => ({ id: item.id, level: item.unit.level }));
-    const startIndex = firstIndexForLevel(gated, progress?.startLevel ?? "A1");
-    const unlocked = isLessonUnlocked(gated, new Set(completed.map((item) => item.lessonId)), lessonId, startIndex);
-    if (!unlocked) {
-      throw new AppError("LOCKED", APP_ERRORS.lessonLocked, 403);
-    }
-
-    await gamificationService.requireHearts(userId);
-    const attempt = await attemptRepository.create({
-      userId,
-      lessonId,
-      questionIds: lesson.questions.map((question) => question.id),
-    });
+    const courseId = lesson.unit.courseId;
+    const [ordered, completed, progress, open] = await Promise.all([
+      lessonRepository.listUnlockOrder(courseId),
+      progressRepository.listCompletedLessonIds(userId, courseId),
+      progressRepository.getCourseProgress(userId, courseId),
+      attemptRepository.findOpen(userId, lessonId),
+      gamificationService.requireHearts(userId),
+    ]);
+    await assertUnlocked(lessonId, ordered, completed, progress?.startLevel ?? "A1");
 
     const langs = {
       sourceLanguage: lesson.unit.course.sourceLanguage,
       targetLanguage: lesson.unit.course.targetLanguage,
     };
+    const questions = lesson.questions.map((question) => toPublicQuestion(question, langs));
+    const attemptId = await resolveAttemptId(open?.id, userId, lessonId, lesson.questions);
 
     return {
-      attemptId: attempt.id,
+      attemptId,
+      resumeIndex: resumeIndexOf(questions, open?.answers ?? []),
       lesson: {
         id: lesson.id,
         title: lesson.title,
         description: lesson.description,
         xpReward: lesson.xpReward,
       },
-      questions: lesson.questions.map((question) => toPublicQuestion(question, langs)),
+      questions,
     };
   },
 
   async submitAnswer(userId: string, attemptId: string, questionId: string, answer: AnswerPayload) {
-    const attempt = await attemptRepository.findById(attemptId);
+    const [attempt, existing, question] = await Promise.all([
+      attemptRepository.findForSubmit(attemptId),
+      attemptRepository.findAnswer(attemptId, questionId),
+      lessonRepository.findQuestion(questionId),
+    ]);
     if (!attempt || attempt.userId !== userId || attempt.completedAt) {
       throw new AppError("INVALID_ATTEMPT", APP_ERRORS.invalidAttempt, 403);
+    }
+    if (!question) {
+      throw new AppError("NOT_FOUND", APP_ERRORS.notFound, 404);
     }
     if (!attempt.questionIds.includes(questionId)) {
       throw new AppError("INVALID_ATTEMPT", APP_ERRORS.invalidAttempt, 403);
     }
-
-    const existing = await attemptRepository.findAnswer(attemptId, questionId);
     if (existing) {
       throw new AppError("ALREADY_ANSWERED", APP_ERRORS.alreadyAnswered, 409);
     }
 
-    const lesson = await lessonRepository.findById(attempt.lessonId);
-    const question = lesson?.questions.find((item) => item.id === questionId);
-    if (!lesson || !question) {
-      throw new AppError("NOT_FOUND", APP_ERRORS.notFound, 404);
-    }
-
     const result = validateAnswer(question, answer);
-    let hearts = await gamificationService.syncHearts(userId);
-    if (!result.isCorrect) {
-      hearts = await gamificationService.applyWrongAnswer(userId);
-    }
-
+    const hearts = result.isCorrect
+      ? await gamificationService.syncHearts(userId)
+      : await gamificationService.applyWrongAnswer(userId);
     await attemptRepository.createAnswer({
       attemptId,
       userId,

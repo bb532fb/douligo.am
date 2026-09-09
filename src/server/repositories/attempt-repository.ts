@@ -12,6 +12,31 @@ export const attemptRepository = {
     });
   },
 
+  findForSubmit(id: string) {
+    return prisma.lessonAttempt.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        userId: true,
+        lessonId: true,
+        completedAt: true,
+        questionIds: true,
+      },
+    });
+  },
+
+  findOpen(userId: string, lessonId: string) {
+    return prisma.lessonAttempt.findFirst({
+      where: { userId, lessonId, completedAt: null },
+      orderBy: { startedAt: "desc" },
+      select: {
+        id: true,
+        questionIds: true,
+        answers: { select: { questionId: true } },
+      },
+    });
+  },
+
   findAnswer(attemptId: string, questionId: string) {
     return prisma.userAnswer.findUnique({
       where: { attemptId_questionId: { attemptId, questionId } },

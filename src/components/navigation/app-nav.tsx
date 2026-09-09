@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 import { BookOpen, Library, Trophy, UserRound, type LucideIcon } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
@@ -31,7 +31,7 @@ export function AppNav() {
   return (
     <>
       <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col lg:border-r-2 lg:border-line lg:bg-paper-raised lg:px-5 lg:py-8">
-        <Link href={withLocale(locale, "/learn")} className="mb-10">
+        <Link href={withLocale(locale, "/learn")} prefetch className="mb-10">
           <Logo />
         </Link>
         <DesktopNav pathname={pathname} locale={locale} dict={dict} />
@@ -47,25 +47,40 @@ export function AppNav() {
 function DesktopNav({ pathname, locale, dict }: { pathname: string; locale: Locale; dict: Dictionary }) {
   return (
     <nav aria-label={dict.nav.main} className="space-y-2">
-      {ITEMS.map((item) => {
-        const href = withLocale(locale, item.path);
-        const active = pathname.startsWith(href);
-        const Icon = item.icon;
-        return (
-          <Link
-            key={item.path}
-            href={href}
-            className={cn(
-              "flex items-center gap-3 rounded-2xl border-2 px-4 py-3 text-base font-extrabold",
-              active ? `border-current ${item.active}` : "border-transparent text-ink-soft hover:bg-paper",
-            )}
-          >
-            <Icon className={cn("h-6 w-6", active ? item.iconColor : "text-ink-soft")} aria-hidden="true" />
-            {dict.nav[item.key]}
-          </Link>
-        );
-      })}
+      {ITEMS.map((item) => (
+        <DesktopItem key={item.path} item={item} pathname={pathname} locale={locale} dict={dict} />
+      ))}
     </nav>
+  );
+}
+
+function DesktopItem({
+  item,
+  pathname,
+  locale,
+  dict,
+}: {
+  item: (typeof ITEMS)[number];
+  pathname: string;
+  locale: Locale;
+  dict: Dictionary;
+}) {
+  const href = withLocale(locale, item.path);
+  const active = pathname.startsWith(href);
+  const Icon = item.icon;
+  return (
+    <Link
+      href={href}
+      prefetch
+      className={cn(
+        "relative flex items-center gap-3 rounded-2xl border-2 px-4 py-3 text-base font-extrabold",
+        active ? `border-current ${item.active}` : "border-transparent text-ink-soft hover:bg-paper",
+      )}
+    >
+      <Icon className={cn("h-6 w-6", active ? item.iconColor : "text-ink-soft")} aria-hidden="true" />
+      {dict.nav[item.key]}
+      <PendingHint />
+    </Link>
   );
 }
 
@@ -76,26 +91,55 @@ function MobileNav({ pathname, locale, dict }: { pathname: string; locale: Local
       className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-line bg-paper-raised px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 lg:hidden"
     >
       <ul className="grid grid-cols-4">
-        {ITEMS.map((item) => {
-          const href = withLocale(locale, item.path);
-          const active = pathname.startsWith(href);
-          const Icon = item.icon;
-          return (
-            <li key={item.path}>
-              <Link
-                href={href}
-                className={cn(
-                  "flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl text-xs font-extrabold",
-                  active ? item.iconColor : "text-ink-soft",
-                )}
-              >
-                <Icon className="h-6 w-6" aria-hidden="true" />
-                {dict.nav[item.key]}
-              </Link>
-            </li>
-          );
-        })}
+        {ITEMS.map((item) => (
+          <li key={item.path}>
+            <MobileItem item={item} pathname={pathname} locale={locale} dict={dict} />
+          </li>
+        ))}
       </ul>
     </nav>
+  );
+}
+
+function MobileItem({
+  item,
+  pathname,
+  locale,
+  dict,
+}: {
+  item: (typeof ITEMS)[number];
+  pathname: string;
+  locale: Locale;
+  dict: Dictionary;
+}) {
+  const href = withLocale(locale, item.path);
+  const active = pathname.startsWith(href);
+  const Icon = item.icon;
+  return (
+    <Link
+      href={href}
+      prefetch
+      className={cn(
+        "relative flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl text-xs font-extrabold",
+        active ? item.iconColor : "text-ink-soft",
+      )}
+    >
+      <Icon className="h-6 w-6" aria-hidden="true" />
+      {dict.nav[item.key]}
+      <PendingHint />
+    </Link>
+  );
+}
+
+function PendingHint() {
+  const { pending } = useLinkStatus();
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "pointer-events-none absolute inset-0 rounded-2xl bg-brand/15 transition-opacity",
+        pending ? "opacity-100" : "opacity-0",
+      )}
+    />
   );
 }

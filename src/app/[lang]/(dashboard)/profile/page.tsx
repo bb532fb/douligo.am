@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -63,12 +62,12 @@ export default async function ProfilePage({ params }: PageProps<"/[lang]/profile
         )}
       </section>
       <div className="flex flex-wrap gap-3">
-        <Link href={withLocale(lang, "/settings")}>
-          <Button variant="secondary">{dict.profile.settings}</Button>
-        </Link>
-        <Link href={withLocale(lang, "/courses")}>
-          <Button variant="secondary">{dict.profile.activeCourse}</Button>
-        </Link>
+        <Button variant="secondary" href={withLocale(lang, "/settings")}>
+          {dict.profile.settings}
+        </Button>
+        <Button variant="secondary" href={withLocale(lang, "/courses")}>
+          {dict.profile.activeCourse}
+        </Button>
         <form action={logoutAction}>
           <Button variant="danger" type="submit">
             {dict.auth.logout}

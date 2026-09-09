@@ -1,64 +1,51 @@
-import { pickVoice } from "@/lib/voice/pick-voice";
 import type { SpeechLang } from "@/lib/voice/locale";
+import {
+  canSpeakBrowser,
+  cancelBrowserSpeech,
+  primeBrowserSpeech,
+  speakBrowser,
+} from "@/lib/voice/browser-tts";
+import { cancelNeural, prefetchNeural, primeNeural, speakNeural } from "@/lib/voice/neural-player";
 
-function synth(): SpeechSynthesis | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-  return window.speechSynthesis ?? null;
-}
+let speakGen = 0;
 
 export function canSpeak(): boolean {
-  return synth() !== null;
+  return typeof window !== "undefined" || canSpeakBrowser();
 }
 
 export function cancelSpeech(): void {
-  synth()?.cancel();
+  speakGen += 1;
+  cancelNeural();
+  cancelBrowserSpeech();
+}
+
+export function prefetchSpeech(text: string, lang: SpeechLang): void {
+  void prefetchNeural(text, lang);
 }
 
 export function primeSpeech(): void {
-  const engine = synth();
-  if (!engine) {
-    return;
-  }
-  engine.cancel();
-  const utter = new SpeechSynthesisUtterance(" ");
-  utter.volume = 0;
-  engine.speak(utter);
-}
-
-function voicesOf(engine: SpeechSynthesis): Promise<SpeechSynthesisVoice[]> {
-  const current = engine.getVoices();
-  if (current.length > 0) {
-    return Promise.resolve(current);
-  }
-
-  return new Promise((resolve) => {
-    const finish = () => resolve(engine.getVoices());
-    engine.addEventListener("voiceschanged", finish, { once: true });
-    window.setTimeout(finish, 400);
-  });
+  primeBrowserSpeech();
+  primeNeural();
 }
 
 export async function speakText(text: string, lang: SpeechLang, rate = 1): Promise<void> {
-  const engine = synth();
   const value = text.trim();
-  if (!engine || !value) {
+  if (!value) {
     return;
   }
 
-  engine.cancel();
-  const utter = new SpeechSynthesisUtterance(value);
-  utter.lang = lang;
-  utter.rate = rate;
-  const voice = pickVoice(await voicesOf(engine), lang);
-  if (voice) {
-    utter.voice = voice;
+  cancelSpeech();
+  const generation = speakGen;
+  try {
+    await speakNeural(value, lang, rate);
+  } catch (error) {
+    if (generation !== speakGen || isAbort(error)) {
+      return;
+    }
+    await speakBrowser(value, lang, rate);
   }
+}
 
-  await new Promise<void>((resolve) => {
-    utter.onend = () => resolve();
-    utter.onerror = () => resolve();
-    engine.speak(utter);
-  });
+function isAbort(error: unknown): boolean {
+  return error instanceof Error && error.name === "AbortError";
 }
