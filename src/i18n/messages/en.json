@@ -19,10 +19,10 @@
       "hy-ru": "Armenian to Russian"
     },
     "pairLeads": {
-      "hy-en": "English A1–A2 for Armenian speakers.",
-      "en-hy": "Armenian A1–A2 for English speakers.",
-      "ru-hy": "Armenian A1–A2 for Russian speakers.",
-      "hy-ru": "Russian A1–A2 for Armenian speakers."
+      "hy-en": "English A1–B1 for Armenian speakers.",
+      "en-hy": "Armenian A1–B1 for English speakers.",
+      "ru-hy": "Armenian A1–B1 for Russian speakers.",
+      "hy-ru": "Russian A1–B1 for Armenian speakers."
     }
   },
   "nav": {
@@ -66,7 +66,12 @@
     "hearts": "hearts",
     "courseComplete": "Course complete 🎉",
     "completed": "Completed",
-    "current": "Current"
+    "current": "Current",
+    "chooseLevel": "Choose your level",
+    "startHere": "Start here",
+    "levelA1": "A1 · Beginner",
+    "levelA2": "A2 · Elementary",
+    "levelB1": "B1 · Intermediate"
   },
   "lesson": {
     "readyToPlay": "Ready to play?",

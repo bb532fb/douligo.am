@@ -2,7 +2,7 @@ import { APP_ERRORS } from "@/lib/constants/copy";
 import { calculateLessonXp } from "@/lib/gamification/xp";
 import { nextMastery } from "@/lib/gamification/mastery";
 import { AppError } from "@/lib/errors/app-error";
-import { firstIncompleteLesson, isLessonUnlocked } from "@/lib/learning/unlock";
+import { firstIncompleteLesson, firstIndexForLevel, isLessonUnlocked } from "@/lib/learning/unlock";
 import { revealCorrectAnswer, toPublicQuestion } from "@/lib/learning/to-public-question";
 import { validateAnswer } from "@/lib/learning/validate-answer";
 import type { AnswerPayload, PathUnit } from "@/types/learning";
@@ -14,13 +14,15 @@ import { gamificationService } from "@/server/services/gamification-service";
 
 export const lessonService = {
   async getLearningPath(userId: string, courseId: string): Promise<PathUnit[]> {
-    const [units, completed] = await Promise.all([
+    const [units, completed, progress] = await Promise.all([
       lessonRepository.listCoursePath(courseId),
       progressRepository.listCompletedLessonIds(userId, courseId),
+      progressRepository.getCourseProgress(userId, courseId),
     ]);
     const completedIds = new Set(completed.map((item) => item.lessonId));
-    const ordered = units.flatMap((unit) => unit.lessons);
-    const currentId = firstIncompleteLesson(ordered, completedIds);
+    const ordered = units.flatMap((unit) => unit.lessons.map((lesson) => ({ id: lesson.id, level: unit.level })));
+    const startIndex = firstIndexForLevel(ordered, progress?.startLevel ?? "A1");
+    const currentId = firstIncompleteLesson(ordered, completedIds, startIndex);
 
     return units.map((unit) => ({
       id: unit.id,
@@ -35,11 +37,7 @@ export const lessonService = {
         order: lesson.order,
         estimatedMinutes: lesson.estimatedMinutes,
         xpReward: lesson.xpReward,
-        status: completedIds.has(lesson.id)
-          ? "completed"
-          : lesson.id === currentId
-            ? "current"
-            : "locked",
+        status: pathStatus(lesson.id, completedIds, currentId, ordered, startIndex),
       })),
     }));
   },
@@ -52,11 +50,10 @@ export const lessonService = {
 
     const ordered = await lessonRepository.listCourseLessons(lesson.unit.courseId);
     const completed = await progressRepository.listCompletedLessonIds(userId, lesson.unit.courseId);
-    const unlocked = isLessonUnlocked(
-      ordered,
-      new Set(completed.map((item) => item.lessonId)),
-      lessonId,
-    );
+    const progress = await progressRepository.getCourseProgress(userId, lesson.unit.courseId);
+    const gated = ordered.map((item) => ({ id: item.id, level: item.unit.level }));
+    const startIndex = firstIndexForLevel(gated, progress?.startLevel ?? "A1");
+    const unlocked = isLessonUnlocked(gated, new Set(completed.map((item) => item.lessonId)), lessonId, startIndex);
     if (!unlocked) {
       throw new AppError("LOCKED", APP_ERRORS.lessonLocked, 403);
     }
@@ -208,9 +205,14 @@ async function updateVocabulary(
 
 async function refreshCourseProgress(userId: string, courseId: string) {
   const ordered = await lessonRepository.listCourseLessons(courseId);
-  const completed = await progressRepository.listCompletedLessonIds(userId, courseId);
+  const [completed, progress] = await Promise.all([
+    progressRepository.listCompletedLessonIds(userId, courseId),
+    progressRepository.getCourseProgress(userId, courseId),
+  ]);
   const completedIds = new Set(completed.map((item) => item.lessonId));
-  const currentId = firstIncompleteLesson(ordered, completedIds);
+  const gated = ordered.map((item) => ({ id: item.id, level: item.unit.level }));
+  const startIndex = firstIndexForLevel(gated, progress?.startLevel ?? "A1");
+  const currentId = firstIncompleteLesson(gated, completedIds, startIndex);
   const current = ordered.find((lesson) => lesson.id === currentId) ?? ordered.at(-1);
   const words = await vocabularyRepository.countLearned(userId, courseId);
   if (!current) {
@@ -225,6 +227,25 @@ async function refreshCourseProgress(userId: string, courseId: string) {
     totalLessonsCompleted: completedIds.size,
     totalWordsLearned: words,
   });
+}
+
+function pathStatus(
+  lessonId: string,
+  completedIds: Set<string>,
+  currentId: string | null,
+  ordered: Array<{ id: string; level: string }>,
+  startIndex: number,
+): PathUnit["lessons"][number]["status"] {
+  if (completedIds.has(lessonId)) {
+    return "completed";
+  }
+  if (lessonId === currentId) {
+    return "current";
+  }
+  if (isLessonUnlocked(ordered, completedIds, lessonId, startIndex)) {
+    return "available";
+  }
+  return "locked";
 }
 
 async function unlockAchievements(userId: string, courseId: string) {

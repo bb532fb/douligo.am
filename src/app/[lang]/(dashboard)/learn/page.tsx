@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CoursePath } from "@/components/learning/course-path";
+import { LevelPicker } from "@/components/learning/level-picker";
 import { StatsRow } from "@/components/layout/stats-row";
 import { Mascot } from "@/components/brand/mascot";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import { prisma } from "@/lib/db/prisma";
 import { courseService } from "@/server/services/course-service";
 import { gamificationService } from "@/server/services/gamification-service";
 import { lessonService } from "@/server/services/lesson-service";
+import { progressRepository } from "@/server/repositories/progress-repository";
 
 export default async function LearnPage({ params }: PageProps<"/[lang]/learn">) {
   const { lang } = await params;
@@ -43,27 +45,37 @@ async function loadLearnData(
   slug: string,
   fallbackTitle: string,
 ) {
-  const [path, totalXp, hearts, streak, goal, profile] = await Promise.all([
+  const [path, totalXp, hearts, stats, progress] = await Promise.all([
     lessonService.getLearningPath(userId, courseId),
     gamificationService.totalXp(userId),
     gamificationService.syncHearts(userId),
-    prisma.userStreak.findUnique({ where: { userId } }),
-    prisma.dailyGoal.findUnique({
-      where: { userId_date: { userId, date: startOfUtcDay() } },
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        profile: { select: { displayName: true, dailyGoalXp: true } },
+        streak: { select: { currentStreak: true } },
+        dailyGoals: {
+          where: { date: startOfUtcDay() },
+          select: { currentXP: true },
+          take: 1,
+        },
+      },
     }),
-    prisma.profile.findUnique({ where: { userId } }),
+    progressRepository.getCourseProgress(userId, courseId),
   ]);
 
   return {
     path,
     totalXp,
     hearts,
-    streak: streak?.currentStreak ?? 0,
+    streak: stats?.streak?.currentStreak ?? 0,
     current: path.flatMap((unit) => unit.lessons).find((lesson) => lesson.status === "current"),
-    dailyTarget: profile?.dailyGoalXp ?? 50,
-    dailyCurrent: goal?.currentXP ?? 0,
-    name: profile?.displayName ?? userName ?? "",
+    dailyTarget: stats?.profile?.dailyGoalXp ?? 50,
+    dailyCurrent: stats?.dailyGoals[0]?.currentXP ?? 0,
+    name: stats?.profile?.displayName ?? userName ?? "",
     courseTitle: dict.home.pairs[slug as keyof typeof dict.home.pairs] ?? fallbackTitle,
+    startLevel: progress?.startLevel ?? "A1",
+    levels: [...new Set(path.map((unit) => unit.level))],
   };
 }
 
@@ -102,6 +114,7 @@ function LearnView({
           className="[&_span]:text-white"
         />
       </Card>
+      <LevelPicker levels={data.levels} selected={data.startLevel} dict={dict} />
       <CoursePath units={data.path} locale={lang} dict={dict} />
     </div>
   );

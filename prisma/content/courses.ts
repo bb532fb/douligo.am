@@ -1,6 +1,7 @@
 import type { LanguageCode } from "@prisma/client";
 import type { A1UnitKey, UnitKey } from "./lexicon";
 import { UNIT_META_A2 } from "./unit-meta-a2";
+import { UNIT_META_B1 } from "./unit-meta-b1";
 import type { CefrLevel } from "./types";
 
 export type CourseSeed = {
@@ -17,28 +18,28 @@ export const COURSE_SEEDS: CourseSeed[] = [
     sourceLanguage: "HY",
     targetLanguage: "EN",
     title: "Հայերենից անգլերեն",
-    description: "Անգլերեն A1–A2՝ հայերենից սկսողների համար։",
+    description: "Անգլերեն A1–B1՝ հայերենից սկսողների համար։",
   },
   {
     slug: "en-hy",
     sourceLanguage: "EN",
     targetLanguage: "HY",
     title: "Անգլերենից հայերեն",
-    description: "Հայերեն A1–A2՝ անգլերեն խոսողների համար։",
+    description: "Հայերեն A1–B1՝ անգլերեն խոսողների համար։",
   },
   {
     slug: "ru-hy",
     sourceLanguage: "RU",
     targetLanguage: "HY",
     title: "Ռուսերենից հայերեն",
-    description: "Հայերեն A1–A2՝ ռուսերեն խոսողների համար։",
+    description: "Հայերեն A1–B1՝ ռուսերեն խոսողների համար։",
   },
   {
     slug: "hy-ru",
     sourceLanguage: "HY",
     targetLanguage: "RU",
     title: "Հայերենից ռուսերեն",
-    description: "Ռուսերեն A1–A2՝ հայերենից սկսողների համար։",
+    description: "Ռուսերեն A1–B1՝ հայերենից սկսողների համար։",
   },
 ];
 
@@ -190,6 +191,7 @@ export const UNIT_META: Record<
 > = {
   ...UNIT_META_A1,
   ...UNIT_META_A2,
+  ...UNIT_META_B1,
 };
 
 export const UNIT_LEVEL: Record<UnitKey, CefrLevel> = {
@@ -201,6 +203,10 @@ export const UNIT_LEVEL: Record<UnitKey, CefrLevel> = {
   routine: "A2",
   city: "A2",
   travel: "A2",
+  work: "B1",
+  health: "B1",
+  opinions: "B1",
+  plans: "B1",
 };
 
 export const UNIT_ORDER: UnitKey[] = [
@@ -212,4 +218,8 @@ export const UNIT_ORDER: UnitKey[] = [
   "routine",
   "city",
   "travel",
+  "work",
+  "health",
+  "opinions",
+  "plans",
 ];

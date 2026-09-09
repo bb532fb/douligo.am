@@ -2,14 +2,15 @@ import { describe, expect, it } from "vitest";
 import { buildCourseContent } from "../../../prisma/content/build-course";
 import { COURSE_SEEDS, UNIT_LEVEL, UNIT_ORDER } from "../../../prisma/content/courses";
 
-describe("A2 curriculum", () => {
-  it("appends four A2 units after A1 on every track", () => {
+describe("curriculum", () => {
+  it("appends A2 then B1 after A1 on every track", () => {
     for (const seed of COURSE_SEEDS) {
       const built = buildCourseContent(seed);
       expect(built.units).toHaveLength(UNIT_ORDER.length);
       expect(built.units.map((unit) => unit.level)).toEqual(UNIT_ORDER.map((key) => UNIT_LEVEL[key]));
       expect(built.units.slice(0, 4).every((unit) => unit.level === "A1")).toBe(true);
-      expect(built.units.slice(4).every((unit) => unit.level === "A2")).toBe(true);
+      expect(built.units.slice(4, 8).every((unit) => unit.level === "A2")).toBe(true);
+      expect(built.units.slice(8).every((unit) => unit.level === "B1")).toBe(true);
     }
   });
 
@@ -19,5 +20,15 @@ describe("A2 curriculum", () => {
     expect(new Set(keys).size).toBe(keys.length);
     expect(built.units.every((unit) => unit.lessons.length === 2)).toBe(true);
     expect(built.units.every((unit) => unit.lessons.every((lesson) => lesson.questions.length > 0))).toBe(true);
+  });
+
+  it("gives B1 connected practice sentences", () => {
+    const built = buildCourseContent(COURSE_SEEDS[0]!);
+    const b1Questions = built.units
+      .filter((unit) => unit.level === "B1")
+      .flatMap((unit) => unit.lessons.flatMap((lesson) => lesson.questions))
+      .filter((question) => question.type === "WORD_ORDER");
+    expect(b1Questions.length).toBeGreaterThan(0);
+    expect(b1Questions.every((question) => (question.payload?.correctOrder.length ?? 0) >= 4)).toBe(true);
   });
 });

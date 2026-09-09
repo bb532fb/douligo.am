@@ -43,7 +43,7 @@ export type PathLesson = {
   order: number;
   estimatedMinutes: number;
   xpReward: number;
-  status: "completed" | "current" | "locked";
+  status: "completed" | "current" | "available" | "locked";
 };
 
 export type PathUnit = {

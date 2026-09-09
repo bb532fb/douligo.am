@@ -228,6 +228,7 @@ model UserProgress {
   course                Course  @relation(fields: [courseId], references: [id], onDelete: Restrict)
   currentUnitId         String?
   currentLessonId       String?
+  startLevel            String  @default("A1")
   totalLessonsCompleted Int     @default(0)
   totalWordsLearned     Int     @default(0)
 

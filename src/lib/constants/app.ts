@@ -16,4 +16,7 @@ export const DAILY_GOAL_OPTIONS = [20, 50, 100] as const;
 
 export const COURSE_SLUGS = ["hy-en", "en-hy", "ru-hy", "hy-ru"] as const;
 
+export const CEFR_LEVELS = ["A1", "A2", "B1"] as const;
+
 export type CourseSlug = (typeof COURSE_SLUGS)[number];
+export type CefrLevel = (typeof CEFR_LEVELS)[number];

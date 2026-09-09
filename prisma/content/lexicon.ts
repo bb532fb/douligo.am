@@ -1,10 +1,11 @@
 import { LEXICON_A2, SENTENCES_A2, type A2UnitKey } from "./lexicon-a2";
+import { LEXICON_B1, SENTENCES_B1, type B1UnitKey } from "./lexicon-b1";
 import type { Lexeme } from "./types";
 
 export type { Lexeme } from "./types";
 
 export type A1UnitKey = "greetings" | "introduce" | "family" | "numbers";
-export type UnitKey = A1UnitKey | A2UnitKey;
+export type UnitKey = A1UnitKey | A2UnitKey | B1UnitKey;
 
 const LEXICON_A1: Record<A1UnitKey, Lexeme[]> = {
   greetings: [
@@ -320,6 +321,7 @@ const LEXICON_A1: Record<A1UnitKey, Lexeme[]> = {
 export const LEXICON: Record<UnitKey, Lexeme[]> = {
   ...LEXICON_A1,
   ...LEXICON_A2,
+  ...LEXICON_B1,
 };
 
 const SENTENCES_A1: Record<A1UnitKey, Array<{ hy: string; en: string; ru: string }>> = {
@@ -343,4 +345,5 @@ const SENTENCES_A1: Record<A1UnitKey, Array<{ hy: string; en: string; ru: string
 export const SENTENCES: Record<UnitKey, Array<{ hy: string; en: string; ru: string }>> = {
   ...SENTENCES_A1,
   ...SENTENCES_A2,
+  ...SENTENCES_B1,
 };

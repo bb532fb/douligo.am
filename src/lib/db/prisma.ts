@@ -11,8 +11,20 @@ function createPrisma(): PrismaClient {
     throw new Error("DATABASE_URL is not set");
   }
 
-  const adapter = new PrismaPg({ connectionString });
-  return new PrismaClient({ adapter });
+  const adapter = new PrismaPg({
+    connectionString,
+    max: 5,
+    idleTimeoutMillis: 30_000,
+    connectionTimeoutMillis: 15_000,
+  });
+
+  return new PrismaClient({
+    adapter,
+    transactionOptions: {
+      maxWait: 15_000,
+      timeout: 20_000,
+    },
+  });
 }
 
 export const prisma = globalForPrisma.prisma ?? createPrisma();

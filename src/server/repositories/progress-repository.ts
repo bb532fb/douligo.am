@@ -48,6 +48,14 @@ export const progressRepository = {
     });
   },
 
+  setStartLevel(userId: string, courseId: string, startLevel: string) {
+    return prisma.userProgress.upsert({
+      where: { userId_courseId: { userId, courseId } },
+      create: { userId, courseId, startLevel },
+      update: { startLevel },
+    });
+  },
+
   updateCourseProgress(input: {
     userId: string;
     courseId: string;

@@ -28,11 +28,13 @@ export function LessonNode({ lesson, index, locale, dict }: LessonNodeProps) {
           "flex h-[70px] w-[70px] items-center justify-center rounded-full border-4",
           lesson.status === "completed" && "border-gold-dark bg-gold text-ink shadow-[0_6px_0_0_#e5a100]",
           current && "border-brand-dark bg-brand text-white shadow-[0_6px_0_0_#46a302]",
+          lesson.status === "available" && "border-teal bg-teal-soft text-teal-dark shadow-[0_6px_0_0_#1899d6]",
           locked && "border-[#cfcfcf] bg-[#e5e5e5] text-[#afafaf] shadow-[0_6px_0_0_#cfcfcf]",
         )}
       >
         {lesson.status === "completed" ? <Check className="h-8 w-8" strokeWidth={4} aria-label={dict.learn.completed} /> : null}
         {current ? <Star className="h-8 w-8 fill-white text-white" aria-label={dict.learn.current} /> : null}
+        {lesson.status === "available" ? <Star className="h-7 w-7" aria-label={dict.learn.startHere} /> : null}
         {locked ? <Lock className="h-7 w-7" aria-label={dict.common.locked} /> : null}
       </div>
       {current ? (
