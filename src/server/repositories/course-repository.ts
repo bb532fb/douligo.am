@@ -1,15 +1,18 @@
+import { rememberCatalog } from "@/lib/cache/remember";
 import { prisma } from "@/lib/db/prisma";
 
 export const courseRepository = {
   listPublished() {
-    return prisma.course.findMany({
-      where: { isPublished: true },
-      orderBy: { slug: "asc" },
-    });
+    return rememberCatalog("courses:published", () =>
+      prisma.course.findMany({
+        where: { isPublished: true },
+        orderBy: { slug: "asc" },
+      }),
+    );
   },
 
   findById(id: string) {
-    return prisma.course.findUnique({ where: { id } });
+    return rememberCatalog(`course:${id}`, () => prisma.course.findUnique({ where: { id } }));
   },
 
   findBySlug(slug: string) {

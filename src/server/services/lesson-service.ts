@@ -6,6 +6,7 @@ import { firstIncompleteLesson, firstIndexForLevel, isLessonUnlocked } from "@/l
 import { revealCorrectAnswer, toPublicQuestion } from "@/lib/learning/to-public-question";
 import { validateAnswer } from "@/lib/learning/validate-answer";
 import type { AnswerPayload, PathUnit } from "@/types/learning";
+import { rememberCatalog } from "@/lib/cache/remember";
 import { attemptRepository } from "@/server/repositories/attempt-repository";
 import { lessonRepository } from "@/server/repositories/lesson-repository";
 import { progressRepository } from "@/server/repositories/progress-repository";
@@ -249,7 +250,7 @@ async function unlockAchievements(userId: string, courseId: string) {
     gamificationService.applyStreak(userId),
     gamificationService.totalXp(userId),
     vocabularyRepository.countLearned(userId, courseId),
-    prisma.achievement.findMany(),
+    rememberCatalog("achievements", () => prisma.achievement.findMany()),
     prisma.userAchievement.findMany({ where: { userId } }),
   ]);
 

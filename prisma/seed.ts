@@ -1,6 +1,8 @@
 import type { AchievementType } from "@prisma/client";
 import { hashPassword } from "../src/lib/auth/password";
+import { bumpContentCache } from "../src/lib/cache/remember";
 import { prisma } from "../src/lib/db/prisma";
+import { closeRedis } from "../src/lib/db/redis";
 import { buildCourseContent } from "./content/build-course";
 import { COURSE_SEEDS } from "./content/courses";
 import { writeCourseContent } from "./content/persist";
@@ -163,10 +165,13 @@ async function main() {
 
 main()
   .then(async () => {
+    await bumpContentCache();
     await prisma.$disconnect();
+    await closeRedis();
   })
   .catch(async (error: unknown) => {
     console.error(error);
     await prisma.$disconnect();
+    await closeRedis();
     process.exit(1);
   });

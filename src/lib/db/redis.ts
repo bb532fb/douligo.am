@@ -76,3 +76,24 @@ export async function redisSet(key: string, value: string, ttlSec: number): Prom
     console.error("redis set", error);
   }
 }
+
+export async function redisIncr(key: string): Promise<void> {
+  try {
+    const client = await getRedis();
+    if (!client) {
+      return;
+    }
+    await client.incr(key);
+  } catch (error) {
+    console.error("redis incr", error);
+  }
+}
+
+export async function closeRedis(): Promise<void> {
+  const client = globalForRedis.redis;
+  globalForRedis.redis = undefined;
+  globalForRedis.redisReady = undefined;
+  if (client?.isOpen) {
+    await client.quit();
+  }
+}
