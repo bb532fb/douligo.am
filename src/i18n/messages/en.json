@@ -1,0 +1,133 @@
+{
+  "meta": {
+    "description": "Learn languages with play and a smile"
+  },
+  "locale": {
+    "hy": "Հայերեն",
+    "en": "English",
+    "ru": "Русский",
+    "switcher": "Language"
+  },
+  "home": {
+    "badge": "Learn by playing",
+    "tagline": "Learn languages with play and a smile",
+    "lead": "Four tracks — Armenian, English, and Russian. Smile and start.",
+    "pairs": {
+      "hy-en": "Armenian to English",
+      "en-hy": "English to Armenian",
+      "ru-hy": "Russian to Armenian",
+      "hy-ru": "Armenian to Russian"
+    },
+    "pairLeads": {
+      "hy-en": "English A1 for Armenian speakers.",
+      "en-hy": "Armenian A1 for English speakers.",
+      "ru-hy": "Armenian A1 for Russian speakers.",
+      "hy-ru": "Russian A1 for Armenian speakers."
+    }
+  },
+  "nav": {
+    "learn": "Learn",
+    "vocabulary": "Vocabulary",
+    "leaderboard": "Leaderboard",
+    "profile": "Profile",
+    "main": "Main navigation"
+  },
+  "auth": {
+    "login": "Log in",
+    "register": "Sign up",
+    "logout": "Log out",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "name": "Name",
+    "alreadyHaveAccount": "Already have an account?",
+    "noAccount": "Don't have an account?"
+  },
+  "common": {
+    "continue": "Continue",
+    "next": "Next",
+    "check": "Check",
+    "locked": "Locked",
+    "correct": "Correct",
+    "incorrect": "Incorrect",
+    "tryAgain": "Try again",
+    "greatJob": "Great job",
+    "home": "Lezu 🏠",
+    "reset": "Try again"
+  },
+  "learn": {
+    "welcome": "Welcome, {name}",
+    "continueLearning": "Keep learning",
+    "continueLesson": "Continue lesson",
+    "startLesson": "Start lesson",
+    "selectCourse": "Choose a track",
+    "dailyGoal": "Daily goal",
+    "streak": "day streak",
+    "hearts": "hearts",
+    "courseComplete": "Course complete 🎉",
+    "completed": "Completed",
+    "current": "Current"
+  },
+  "lesson": {
+    "readyToPlay": "Ready to play?",
+    "lessonComplete": "Lesson complete",
+    "score": "Score: {score}%",
+    "wordsLearned": "Words learned: {count}",
+    "correctAnswer": "Correct answer: {answer}",
+    "answer": "Answer",
+    "noHearts": "You're out of hearts. They refill tomorrow."
+  },
+  "profile": {
+    "level": "Level {level}",
+    "longestStreak": "Longest streak",
+    "lessons": "Lessons",
+    "words": "Words",
+    "accuracy": "Accuracy",
+    "achievements": "Achievements",
+    "settings": "Settings",
+    "activeCourse": "Active track",
+    "emptyAchievements": "No achievements yet. Start learning."
+  },
+  "vocabulary": {
+    "search": "Search words",
+    "filterAll": "All",
+    "filterLearning": "Learning",
+    "filterMastered": "Mastered",
+    "empty": "No words yet. Finish your first lesson."
+  },
+  "leaderboard": {
+    "empty": "No points this week yet."
+  },
+  "settings": {
+    "title": "Settings",
+    "dailyGoal": "Daily goal"
+  },
+  "voice": {
+    "speak": "Listen",
+    "speakSlow": "Slow",
+    "listen": "Speak",
+    "listening": "Listening…",
+    "unsupported": "Voice isn’t available in this browser. Try Chrome or Edge.",
+    "micDenied": "Microphone permission is required.",
+    "heard": "I heard: {text}",
+    "enabled": "Voice coach",
+    "autoplay": "Auto-speak"
+  },
+  "errors": {
+    "invalidEmail": "Enter a valid email address.",
+    "passwordMin": "Password must be at least 8 characters.",
+    "passwordMismatch": "Passwords do not match.",
+    "nameMin": "Name must be at least 2 characters.",
+    "emailTaken": "This email is already registered.",
+    "invalidCredentials": "Wrong email or password.",
+    "required": "This field is required.",
+    "unauthorized": "Your session expired. Please log in again.",
+    "notFound": "Page not found.",
+    "lessonLocked": "This lesson is still locked.",
+    "noHearts": "You're out of hearts.",
+    "alreadyAnswered": "You already answered this question.",
+    "invalidAttempt": "This lesson session is invalid.",
+    "generic": "Something went wrong. Try again.",
+    "validation": "Check the entered details."
+  }
+}

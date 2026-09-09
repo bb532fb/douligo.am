@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: lezu-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: lezu
+      POSTGRES_PASSWORD: lezu
+      POSTGRES_DB: lezu
+    ports:
+      - "5432:5432"
+    volumes:
+      - lezu-pg-data:/var/lib/postgresql/data
+
+volumes:
+  lezu-pg-data:
