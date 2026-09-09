@@ -1,6 +1,6 @@
 import type { LanguageCode, QuestionType } from "@prisma/client";
-import { LEXICON, SENTENCES, type Lexeme, type UnitKey } from "./lexicon";
-import { UNIT_META, type CourseSeed } from "./courses";
+import { LEXICON, SENTENCES, type Lexeme } from "./lexicon";
+import { UNIT_LEVEL, UNIT_META, UNIT_ORDER, type CourseSeed } from "./courses";
 
 export type BuiltOption = { text: string; isCorrect: boolean; order: number };
 
@@ -160,8 +160,11 @@ export function buildCourseContent(course: CourseSeed): {
   words: BuiltWord[];
 } {
   const words: BuiltWord[] = [];
-  const units = (["greetings", "introduce", "family", "numbers"] as UnitKey[]).map((unitKey, unitIndex) => {
+  const units = UNIT_ORDER.map((unitKey, unitIndex) => {
     const meta = UNIT_META[unitKey][course.slug];
+    if (!meta) {
+      throw new Error(`Missing UNIT_META for ${unitKey} (${course.slug})`);
+    }
     const lexemes = LEXICON[unitKey];
     const sentences = SENTENCES[unitKey];
 
@@ -202,7 +205,7 @@ export function buildCourseContent(course: CourseSeed): {
       title: meta.title,
       description: meta.description,
       order: unitIndex + 1,
-      level: "A1",
+      level: UNIT_LEVEL[unitKey],
       lessons: [
         {
           title: meta.lessons[0],

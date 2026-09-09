@@ -15,6 +15,9 @@ export function CoursePath({ units, locale, dict }: CoursePathProps) {
     <ol className="space-y-10">
       {units.map((unit, unitIndex) => (
         <li key={unit.id} className="space-y-8">
+          {unitIndex === 0 || unit.level !== units[unitIndex - 1]?.level ? (
+            <p className="text-center text-sm font-black tracking-[0.28em] text-ink-soft">{unit.level}</p>
+          ) : null}
           <UnitBanner
             title={unit.title}
             description={unit.description}

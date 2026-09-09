@@ -1,19 +1,12 @@
-export type Lexeme = {
-  key: string;
-  hy: string;
-  en: string;
-  ru: string;
-  hyPron: string;
-  enPron: string;
-  ruPron: string;
-  exampleHy: string;
-  exampleEn: string;
-  exampleRu: string;
-};
+import { LEXICON_A2, SENTENCES_A2, type A2UnitKey } from "./lexicon-a2";
+import type { Lexeme } from "./types";
 
-export type UnitKey = "greetings" | "introduce" | "family" | "numbers";
+export type { Lexeme } from "./types";
 
-export const LEXICON: Record<UnitKey, Lexeme[]> = {
+export type A1UnitKey = "greetings" | "introduce" | "family" | "numbers";
+export type UnitKey = A1UnitKey | A2UnitKey;
+
+const LEXICON_A1: Record<A1UnitKey, Lexeme[]> = {
   greetings: [
     {
       key: "hello",
@@ -324,7 +317,12 @@ export const LEXICON: Record<UnitKey, Lexeme[]> = {
   ],
 };
 
-export const SENTENCES: Record<UnitKey, Array<{ hy: string; en: string; ru: string }>> = {
+export const LEXICON: Record<UnitKey, Lexeme[]> = {
+  ...LEXICON_A1,
+  ...LEXICON_A2,
+};
+
+const SENTENCES_A1: Record<A1UnitKey, Array<{ hy: string; en: string; ru: string }>> = {
   greetings: [
     { hy: "Բարև, ինչպե՞ս ես", en: "Hello how are you", ru: "Привет как дела" },
     { hy: "Շնորհակալություն օգնության համար", en: "Thank you for your help", ru: "Спасибо за помощь" },
@@ -340,4 +338,9 @@ export const SENTENCES: Record<UnitKey, Array<{ hy: string; en: string; ru: stri
   numbers: [
     { hy: "Ես ունեմ երկու քույր", en: "I have two sisters", ru: "У меня две сестры" },
   ],
+};
+
+export const SENTENCES: Record<UnitKey, Array<{ hy: string; en: string; ru: string }>> = {
+  ...SENTENCES_A1,
+  ...SENTENCES_A2,
 };

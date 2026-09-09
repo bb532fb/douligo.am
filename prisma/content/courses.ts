@@ -1,5 +1,7 @@
 import type { LanguageCode } from "@prisma/client";
-import type { UnitKey } from "./lexicon";
+import type { A1UnitKey, UnitKey } from "./lexicon";
+import { UNIT_META_A2 } from "./unit-meta-a2";
+import type { CefrLevel } from "./types";
 
 export type CourseSeed = {
   slug: string;
@@ -15,33 +17,33 @@ export const COURSE_SEEDS: CourseSeed[] = [
     sourceLanguage: "HY",
     targetLanguage: "EN",
     title: "Հայերենից անգլերեն",
-    description: "Անգլերեն A1՝ հայերենից սկսողների համար։",
+    description: "Անգլերեն A1–A2՝ հայերենից սկսողների համար։",
   },
   {
     slug: "en-hy",
     sourceLanguage: "EN",
     targetLanguage: "HY",
     title: "Անգլերենից հայերեն",
-    description: "Հայերեն A1՝ անգլերեն խոսողների համար։",
+    description: "Հայերեն A1–A2՝ անգլերեն խոսողների համար։",
   },
   {
     slug: "ru-hy",
     sourceLanguage: "RU",
     targetLanguage: "HY",
     title: "Ռուսերենից հայերեն",
-    description: "Հայերեն A1՝ ռուսերեն խոսողների համար։",
+    description: "Հայերեն A1–A2՝ ռուսերեն խոսողների համար։",
   },
   {
     slug: "hy-ru",
     sourceLanguage: "HY",
     targetLanguage: "RU",
     title: "Հայերենից ռուսերեն",
-    description: "Ռուսերեն A1՝ հայերենից սկսողների համար։",
+    description: "Ռուսերեն A1–A2՝ հայերենից սկսողների համար։",
   },
 ];
 
-export const UNIT_META: Record<
-  UnitKey,
+const UNIT_META_A1: Record<
+  A1UnitKey,
   Record<string, { title: string; description: string; lessons: [string, string] }>
 > = {
   "greetings": {
@@ -182,4 +184,32 @@ export const UNIT_META: Record<
   }
 };
 
-export const UNIT_ORDER: UnitKey[] = ["greetings", "introduce", "family", "numbers"];
+export const UNIT_META: Record<
+  UnitKey,
+  Record<string, { title: string; description: string; lessons: [string, string] }>
+> = {
+  ...UNIT_META_A1,
+  ...UNIT_META_A2,
+};
+
+export const UNIT_LEVEL: Record<UnitKey, CefrLevel> = {
+  greetings: "A1",
+  introduce: "A1",
+  family: "A1",
+  numbers: "A1",
+  food: "A2",
+  routine: "A2",
+  city: "A2",
+  travel: "A2",
+};
+
+export const UNIT_ORDER: UnitKey[] = [
+  "greetings",
+  "introduce",
+  "family",
+  "numbers",
+  "food",
+  "routine",
+  "city",
+  "travel",
+];
