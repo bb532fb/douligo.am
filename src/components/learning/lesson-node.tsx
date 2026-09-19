@@ -7,7 +7,16 @@ import { withLocale } from "@/i18n/path";
 import { cn } from "@/lib/utils/cn";
 import type { PathLesson } from "@/types/learning";
 
-const WAVE = [0, 56, 96, 48, 0, -48, -96, -56];
+const WAVE = [
+  "translate-x-0",
+  "translate-x-5 sm:translate-x-14",
+  "translate-x-8 sm:translate-x-24",
+  "translate-x-5 sm:translate-x-12",
+  "translate-x-0",
+  "-translate-x-5 sm:-translate-x-12",
+  "-translate-x-8 sm:-translate-x-24",
+  "-translate-x-5 sm:-translate-x-14",
+] as const;
 
 type LessonNodeProps = {
   lesson: PathLesson;
@@ -19,9 +28,9 @@ type LessonNodeProps = {
 export function LessonNode({ lesson, index, locale, dict }: LessonNodeProps) {
   const locked = lesson.status === "locked";
   const current = lesson.status === "current";
-  const offset = WAVE[index % WAVE.length] ?? 0;
+  const offset = WAVE[index % WAVE.length] ?? WAVE[0];
   const node = (
-    <div className="flex flex-col items-center" style={{ transform: `translateX(${offset}px)` }}>
+    <div className={cn("flex max-w-[min(100%,11rem)] flex-col items-center", offset)}>
       {current ? <Mascot size={64} mood="happy" className="-mb-2" /> : null}
       <div
         className={cn(

@@ -111,14 +111,16 @@ function LearnView({
   data: Awaited<ReturnType<typeof loadLearnData>>;
 }) {
   return (
-    <div className="space-y-8">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <Mascot size={72} mood="happy" />
-          <div>
+    <div className="space-y-8 overflow-x-clip">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
+          <Mascot size={64} mood="happy" className="shrink-0" />
+          <div className="min-w-0">
             <p className="text-sm font-black tracking-[0.2em] text-ink-soft">{data.currentLevel}</p>
-            <h1 className="text-3xl font-black">{interpolate(dict.learn.welcome, { name: data.name })}</h1>
-            <p className="mt-1 font-bold text-ink-soft">
+            <h1 className="text-2xl font-black break-words sm:text-3xl">
+              {interpolate(dict.learn.welcome, { name: data.name })}
+            </h1>
+            <p className="mt-1 break-words font-bold text-ink-soft">
               {data.courseTitle} · {data.lessonsCompleted}/{data.lessonsTotal}
               {" · "}
               <Link href={withLocale(lang, "/courses")} className="text-teal hover:underline">
@@ -127,7 +129,7 @@ function LearnView({
             </p>
           </div>
         </div>
-        <Button href={withLocale(lang, "/analytics")} variant="ghost" className="shrink-0">
+        <Button href={withLocale(lang, "/analytics")} variant="ghost" className="w-full shrink-0 sm:w-auto">
           {dict.learn.viewAnalytics}
         </Button>
       </div>

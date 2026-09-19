@@ -8,7 +8,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const isAdmin = account?.role === "ADMIN" && account.status === "ACTIVE";
 
   return (
-    <div className="min-h-full">
+    <div className="min-h-full overflow-x-clip">
       <AppNav isAdmin={isAdmin} />
       <div
         className={
@@ -20,7 +20,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         <div className="mx-auto flex max-w-3xl justify-end pb-4 lg:hidden">
           <LocaleSwitcher />
         </div>
-        <div className="mx-auto max-w-3xl">{children}</div>
+        <div className="mx-auto min-w-0 max-w-3xl">{children}</div>
       </div>
     </div>
   );

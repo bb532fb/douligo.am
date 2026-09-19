@@ -25,7 +25,7 @@ export function CoursePath({ units, locale, dict, accessibleLevels }: CoursePath
             level={unit.level}
             index={unitIndex}
           />
-          <ol className="relative flex flex-col items-center gap-8 py-4">
+          <ol className="relative flex flex-col items-center gap-8 overflow-x-clip py-4">
             <span className="absolute inset-y-0 left-1/2 w-1 -translate-x-1/2 rounded-full bg-line" aria-hidden="true" />
             {unit.lessons.map((lesson, lessonIndex) => (
               <li key={lesson.id} className="relative z-[1]">
