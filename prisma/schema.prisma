@@ -33,14 +33,59 @@ enum AchievementType {
   WORDS_LEARNED
 }
 
+enum SkillType {
+  VOCABULARY
+  GRAMMAR
+  LISTENING
+  READING
+  TRANSLATION
+}
+
+enum ExerciseDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum KnowledgeState {
+  NEW
+  LEARNING
+  WEAK
+  LEARNED
+  MASTERED
+}
+
+enum LessonKind {
+  STANDARD
+  REVIEW
+  ASSESSMENT
+}
+
+enum TopicKind {
+  VOCABULARY
+  GRAMMAR
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String     @id @default(cuid())
+  email        String     @unique
   passwordHash String
   name         String
   avatar       String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  role         UserRole   @default(USER)
+  status       UserStatus @default(ACTIVE)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 
   profile        Profile?
   enrollments    UserCourseEnrollment[]
@@ -51,10 +96,24 @@ model User {
   xpEvents       UserXP[]
   answers        UserAnswer[]
   attempts       LessonAttempt[]
-  dailyGoals     DailyGoal[]
-  achievements   UserAchievement[]
+  dailyGoals          DailyGoal[]
+  achievements        UserAchievement[]
+  topicMasteries      TopicMastery[]
+  skillMasteries      SkillMastery[]
+  levelMasteries      LevelMastery[]
+  assessmentAttempts  AssessmentAttempt[]
+  reviewItems         ReviewItem[]
 
   @@index([email])
+  @@index([role])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model AppSettings {
+  id        String   @id @default("default")
+  heartsMax Int      @default(5)
+  updatedAt DateTime @updatedAt
 }
 
 model Profile {
@@ -84,9 +143,14 @@ model Course {
   updatedAt      DateTime     @updatedAt
 
   units        Unit[]
-  enrollments  UserCourseEnrollment[]
-  progress     UserProgress[]
-  vocabulary   VocabularyWord[]
+  enrollments         UserCourseEnrollment[]
+  progress            UserProgress[]
+  vocabulary          VocabularyWord[]
+  topicMasteries      TopicMastery[]
+  skillMasteries      SkillMastery[]
+  levelMasteries      LevelMastery[]
+  assessmentAttempts  AssessmentAttempt[]
+  reviewItems         ReviewItem[]
 
   @@unique([sourceLanguage, targetLanguage])
   @@index([isPublished])
@@ -127,14 +191,18 @@ model Lesson {
   description       String
   order             Int
   xpReward          Int      @default(20)
-  estimatedMinutes  Int      @default(6)
+  estimatedMinutes  Int        @default(6)
+  kind              LessonKind @default(STANDARD)
   questions         Question[]
   vocabulary        LessonVocabulary[]
+  topics            LessonTopic[]
   progress          LessonProgress[]
   attempts          LessonAttempt[]
+  assessments       AssessmentAttempt[]
 
   @@unique([unitId, order])
   @@index([unitId, order])
+  @@index([kind])
 }
 
 model Question {
@@ -147,11 +215,18 @@ model Question {
   order           Int
   acceptedAnswers String[]
   payload         Json?
+  skillType       SkillType           @default(VOCABULARY)
+  difficulty      ExerciseDifficulty  @default(MEDIUM)
+  topicId         String?
+  topic           Topic?              @relation(fields: [topicId], references: [id], onDelete: SetNull)
   options         QuestionOption[]
   answers         UserAnswer[]
+  reviews         ReviewItem[]
 
   @@unique([lessonId, order])
   @@index([lessonId, order])
+  @@index([topicId])
+  @@index([skillType, difficulty])
 }
 
 model QuestionOption {
@@ -200,9 +275,14 @@ model UserVocabulary {
   incorrectAnswers Int             @default(0)
   lastReviewedAt   DateTime?
   nextReviewAt     DateTime?
+  knowledgeState   KnowledgeState @default(NEW)
+  intervalDays     Int            @default(0)
+  repetitions      Int            @default(0)
+  easeFactor       Float          @default(2.5)
 
   @@unique([userId, vocabularyWordId])
   @@index([userId, mastery])
+  @@index([userId, nextReviewAt])
 }
 
 model LessonProgress {
@@ -282,12 +362,21 @@ model UserAnswer {
   user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   questionId String
   question   Question      @relation(fields: [questionId], references: [id], onDelete: Restrict)
-  answer     String
-  isCorrect  Boolean
-  createdAt  DateTime      @default(now())
+  answer        String
+  isCorrect     Boolean
+  createdAt     DateTime             @default(now())
+  timeSpentMs   Int?
+  attemptNumber Int                  @default(1)
+  skillType     SkillType?
+  topicId       String?
+  unitId        String?
+  levelKey      String?
 
   @@unique([attemptId, questionId])
   @@index([userId, createdAt])
+  @@index([userId, topicId, createdAt])
+  @@index([userId, skillType, createdAt])
+  @@index([userId, levelKey, createdAt])
 }
 
 model DailyGoal {
@@ -322,4 +411,137 @@ model UserAchievement {
   unlockedAt    DateTime    @default(now())
 
   @@unique([userId, achievementId])
+}
+
+model Topic {
+  id         String    @id @default(cuid())
+  key        String
+  kind       TopicKind
+  level      String
+  title      String
+  isCritical Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+
+  questions  Question[]
+  lessons    LessonTopic[]
+  masteries  TopicMastery[]
+  reviews    ReviewItem[]
+
+  @@unique([key, level])
+  @@index([level, kind])
+}
+
+model LessonTopic {
+  lessonId String
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  topicId  String
+  topic    Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@id([lessonId, topicId])
+  @@index([topicId])
+}
+
+model TopicMastery {
+  id                  String         @id @default(cuid())
+  userId              String
+  user                User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId            String
+  course              Course         @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  topicId             String
+  topic               Topic          @relation(fields: [topicId], references: [id], onDelete: Restrict)
+  score               Float          @default(0)
+  evidenceScore       Float          @default(50)
+  knowledgeState      KnowledgeState @default(NEW)
+  correctCount        Int            @default(0)
+  incorrectCount      Int            @default(0)
+  consecutiveCorrect  Int            @default(0)
+  consecutiveWrong    Int            @default(0)
+  lastResultCorrect   Boolean?
+  lastPracticedAt     DateTime?
+  nextReviewAt        DateTime?
+  intervalIndex       Int            @default(0)
+  easeFactor          Float          @default(2.5)
+  updatedAt           DateTime       @updatedAt
+
+  @@unique([userId, courseId, topicId])
+  @@index([userId, courseId])
+  @@index([userId, nextReviewAt])
+  @@index([userId, courseId, score])
+}
+
+model SkillMastery {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId    String
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  levelKey    String
+  skillType   SkillType
+  score       Float     @default(0)
+  sampleCount Int       @default(0)
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, courseId, levelKey, skillType])
+  @@index([userId, courseId, levelKey])
+}
+
+model LevelMastery {
+  id                    String    @id @default(cuid())
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId              String
+  course                Course    @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  levelKey              String
+  overallScore          Float     @default(0)
+  lessonsCompleted      Int       @default(0)
+  lessonsTotal          Int       @default(0)
+  isUnlocked            Boolean   @default(false)
+  unlockedAt            DateTime?
+  lastAssessmentScore   Int?
+  lastAssessmentPassed  Boolean?
+  updatedAt             DateTime  @updatedAt
+
+  @@unique([userId, courseId, levelKey])
+  @@index([userId, courseId])
+}
+
+model AssessmentAttempt {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId     String
+  course       Course    @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  levelKey     String
+  lessonId     String?
+  lesson       Lesson?   @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  attemptId    String?
+  score        Int
+  passed       Boolean
+  questionIds  String[]
+  createdAt    DateTime  @default(now())
+
+  @@index([userId, courseId, levelKey, createdAt])
+}
+
+model ReviewItem {
+  id               String         @id @default(cuid())
+  userId           String
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId         String
+  course           Course         @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  topicId          String?
+  topic            Topic?         @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  vocabularyWordId String?
+  questionId       String?
+  question         Question?      @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  knowledgeState   KnowledgeState @default(LEARNING)
+  intervalIndex    Int            @default(0)
+  nextReviewAt     DateTime
+  lastReviewedAt   DateTime?
+  lastCorrect      Boolean?
+  createdAt        DateTime       @default(now())
+
+  @@unique([userId, courseId, questionId])
+  @@index([userId, courseId, nextReviewAt])
+  @@index([userId, topicId])
 }

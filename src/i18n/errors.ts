@@ -10,6 +10,8 @@ const ERROR_CODES: Record<string, ErrorKey> = {
   INVALID_ATTEMPT: "invalidAttempt",
   UNAUTHORIZED: "unauthorized",
   VALIDATION: "validation",
+  FORBIDDEN: "forbidden",
+  ACCOUNT_SUSPENDED: "accountSuspended",
 };
 
 export function isErrorKey(value: string): value is ErrorKey {
@@ -29,6 +31,8 @@ export function isErrorKey(value: string): value is ErrorKey {
     invalidAttempt: true,
     generic: true,
     validation: true,
+    forbidden: true,
+    accountSuspended: true,
   };
 }
 

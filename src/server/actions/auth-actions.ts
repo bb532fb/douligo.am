@@ -5,12 +5,14 @@ import { redirect } from "next/navigation";
 import { signIn, signOut } from "@/lib/auth/auth";
 import { AUTH_ERRORS, APP_ERRORS } from "@/lib/constants/copy";
 import { AppError } from "@/lib/errors/app-error";
+import { safeCallbackUrl } from "@/lib/auth/callback-url";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { getRequestLocale } from "@/i18n/request-locale";
 import { translateError, translateErrorKey } from "@/i18n/errors";
 import { withLocale } from "@/i18n/path";
 import { loginSchema, registerSchema } from "@/lib/validations/auth";
 import { authService } from "@/server/services/auth-service";
+import { userRepository } from "@/server/repositories/user-repository";
 
 export type ActionResult = {
   ok: boolean;
@@ -45,7 +47,7 @@ export async function registerAction(_: ActionResult, formData: FormData): Promi
     await signIn("credentials", {
       email: parsed.data.email,
       password: parsed.data.password,
-      redirectTo: withLocale(locale, "/courses"),
+      redirectTo: safeCallbackUrl(formData.get("callbackUrl"), locale) ?? withLocale(locale, "/courses"),
     });
     return { ok: true };
   } catch (error) {
@@ -71,11 +73,16 @@ export async function loginAction(_: ActionResult, formData: FormData): Promise<
     return { ok: false, message: translateErrorKey(parsed.error.issues[0]?.message, dict) };
   }
 
+  const existing = await userRepository.findByEmail(parsed.data.email);
+  if (existing?.status === "SUSPENDED") {
+    return { ok: false, message: dict.errors[APP_ERRORS.accountSuspended] };
+  }
+
   try {
     await signIn("credentials", {
       email: parsed.data.email,
       password: parsed.data.password,
-      redirectTo: withLocale(locale, "/learn"),
+      redirectTo: safeCallbackUrl(formData.get("callbackUrl"), locale) ?? withLocale(locale, "/learn"),
     });
     return { ok: true };
   } catch (error) {

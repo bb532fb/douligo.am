@@ -3,6 +3,7 @@ import { hashPassword } from "@/lib/auth/password";
 import { AppError } from "@/lib/errors/app-error";
 import { registerSchema, type RegisterInput } from "@/lib/validations/auth";
 import { userRepository } from "@/server/repositories/user-repository";
+import { settingsService } from "@/server/services/settings-service";
 
 export const authService = {
   async register(input: RegisterInput) {
@@ -12,11 +13,15 @@ export const authService = {
       throw new AppError("EMAIL_TAKEN", AUTH_ERRORS.emailTaken, 409);
     }
 
-    const passwordHash = await hashPassword(parsed.password);
+    const [passwordHash, hearts] = await Promise.all([
+      hashPassword(parsed.password),
+      settingsService.getHeartsMax(),
+    ]);
     return userRepository.create({
       email: parsed.email,
       name: parsed.name,
       passwordHash,
+      hearts,
     });
   },
 };

@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { LOCALES } from "@/i18n/config";
 
-const ORIGIN = "https://lezu.app";
+const ORIGIN = "https://lezoo.app";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const pages = ["", "/login", "/register"];

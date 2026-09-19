@@ -17,4 +17,6 @@ export const APP_ERRORS = {
   invalidAttempt: "invalidAttempt",
   generic: "generic",
   validation: "validation",
+  forbidden: "forbidden",
+  accountSuspended: "accountSuspended",
 } as const;

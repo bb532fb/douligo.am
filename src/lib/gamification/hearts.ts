@@ -9,14 +9,23 @@ export function refillHeartsIfNeeded(
   hearts: number,
   refilledAt: Date,
   now: Date,
+  max = HEARTS_MAX,
 ): { hearts: number; refilled: boolean } {
-  if (hearts >= HEARTS_MAX || isSameUtcDay(refilledAt, now)) {
+  if (hearts >= max || isSameUtcDay(refilledAt, now)) {
     return { hearts, refilled: false };
   }
 
-  return { hearts: HEARTS_MAX, refilled: true };
+  return { hearts: max, refilled: true };
 }
 
 export function canStartLesson(hearts: number): boolean {
   return hearts > 0;
+}
+
+export function clampHearts(value: number, max = HEARTS_MAX): number {
+  return Math.min(max, Math.max(0, Math.round(value)));
+}
+
+export function addHearts(current: number, delta: number, max = HEARTS_MAX): number {
+  return clampHearts(current + delta, max);
 }

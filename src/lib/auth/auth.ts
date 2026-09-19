@@ -27,7 +27,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           where: { email: parsed.data.email.toLowerCase() },
         });
 
-        if (!user) {
+        if (!user || user.status === "SUSPENDED") {
           return null;
         }
 

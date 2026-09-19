@@ -1,11 +1,10 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CoursePath } from "@/components/learning/course-path";
 import { LevelPicker } from "@/components/learning/level-picker";
 import { StatsRow } from "@/components/layout/stats-row";
 import { Mascot } from "@/components/brand/mascot";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { ProgressBar } from "@/components/ui/progress-bar";
 import { requireUser } from "@/lib/auth/session";
 import { hasLocale, type Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
@@ -17,7 +16,10 @@ import { prisma } from "@/lib/db/prisma";
 import { courseService } from "@/server/services/course-service";
 import { gamificationService } from "@/server/services/gamification-service";
 import { lessonService } from "@/server/services/lesson-service";
+import { settingsService } from "@/server/services/settings-service";
+import { masteryDashboardService } from "@/server/services/mastery-dashboard-service";
 import { progressRepository } from "@/server/repositories/progress-repository";
+import { levelUnlockService } from "@/server/services/level-unlock-service";
 
 export default async function LearnPage({ params }: PageProps<"/[lang]/learn">) {
   const { lang } = await params;
@@ -26,13 +28,24 @@ export default async function LearnPage({ params }: PageProps<"/[lang]/learn">) 
   }
 
   const user = await requireUser();
-  const course = await courseService.requireActiveCourse(user.id);
-  if (!course) {
+  const placement = await courseService.getActivePlacement(user.id);
+  if (!placement) {
     redirect(withLocale(lang, "/courses"));
+  }
+  if (placement.needsPlacement) {
+    redirect(withLocale(lang, "/onboarding/level"));
   }
 
   const dict = await getDictionary(lang);
-  const data = await loadLearnData(user.id, course.id, user.name, dict, course.slug, course.title);
+  const data = await loadLearnData(
+    user.id,
+    placement.course.id,
+    user.name,
+    dict,
+    placement.course.slug,
+    placement.course.title,
+    placement.levels,
+  );
   return <LearnView lang={lang} dict={dict} data={data} />;
 }
 
@@ -43,11 +56,13 @@ async function loadLearnData(
   dict: Dictionary,
   slug: string,
   fallbackTitle: string,
+  levels: string[],
 ) {
-  const [path, totalXp, hearts, stats, progress] = await Promise.all([
+  const [path, totalXp, hearts, heartsMax, stats, progress] = await Promise.all([
     lessonService.getLearningPath(userId, courseId),
     gamificationService.totalXp(userId),
     gamificationService.syncHearts(userId),
+    settingsService.getHeartsMax(),
     prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -62,19 +77,27 @@ async function loadLearnData(
     }),
     progressRepository.getCourseProgress(userId, courseId),
   ]);
+  const startLevel = progress?.startLevel ?? "A1";
+  const [mastery, accessible] = await Promise.all([
+    masteryDashboardService.getDashboard(userId, courseId, startLevel),
+    levelUnlockService.accessibleLevels(userId, courseId, startLevel),
+  ]);
 
   return {
     path,
     totalXp,
     hearts,
+    heartsMax,
     streak: stats?.streak?.currentStreak ?? 0,
     current: path.flatMap((unit) => unit.lessons).find((lesson) => lesson.status === "current"),
-    dailyTarget: stats?.profile?.dailyGoalXp ?? 50,
-    dailyCurrent: stats?.dailyGoals[0]?.currentXP ?? 0,
     name: stats?.profile?.displayName ?? userName ?? "",
     courseTitle: dict.home.pairs[slug as keyof typeof dict.home.pairs] ?? fallbackTitle,
-    startLevel: progress?.startLevel ?? "A1",
-    levels: [...new Set(path.map((unit) => unit.level))],
+    currentLevel: mastery.currentLevel,
+    startLevel,
+    levels,
+    lessonsCompleted: mastery.lessonsCompleted,
+    lessonsTotal: mastery.lessonsTotal,
+    accessibleLevels: [...accessible],
   };
 }
 
@@ -89,34 +112,33 @@ function LearnView({
 }) {
   return (
     <div className="space-y-8">
-      <div className="flex items-center gap-4">
-        <Mascot size={88} mood="happy" />
-        <div>
-          <h1 className="text-3xl font-black">{interpolate(dict.learn.welcome, { name: data.name })} 👋</h1>
-          <p className="mt-1 font-bold text-ink-soft">{data.courseTitle}</p>
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Mascot size={72} mood="happy" />
+          <div>
+            <p className="text-sm font-black tracking-[0.2em] text-ink-soft">{data.currentLevel}</p>
+            <h1 className="text-3xl font-black">{interpolate(dict.learn.welcome, { name: data.name })}</h1>
+            <p className="mt-1 font-bold text-ink-soft">
+              {data.courseTitle} · {data.lessonsCompleted}/{data.lessonsTotal}
+              {" · "}
+              <Link href={withLocale(lang, "/")} className="text-teal hover:underline">
+                {dict.learn.selectCourse}
+              </Link>
+            </p>
+          </div>
         </div>
+        <Button href={withLocale(lang, "/analytics")} variant="ghost" className="shrink-0">
+          {dict.learn.viewAnalytics}
+        </Button>
       </div>
-      <StatsRow streak={data.streak} xp={data.totalXp} hearts={data.hearts} dict={dict} />
-      <Card className="space-y-4 border-teal bg-teal text-white shadow-[0_8px_0_#1899d6]">
-        <p className="text-lg font-black">{dict.learn.continueLearning}</p>
-        <p className="font-semibold text-white/90">{data.current?.title ?? dict.learn.courseComplete}</p>
-        {data.current ? (
-          <Button
-            variant="secondary"
-            className="w-full sm:w-auto"
-            href={withLocale(lang, `/lesson/${data.current.id}`)}
-          >
-            {dict.learn.continueLesson}
-          </Button>
-        ) : null}
-        <ProgressBar
-          label={dict.learn.dailyGoal}
-          value={Math.round((data.dailyCurrent / data.dailyTarget) * 100)}
-          className="[&_span]:text-white"
-        />
-      </Card>
+      <StatsRow streak={data.streak} xp={data.totalXp} hearts={data.hearts} heartsMax={data.heartsMax} dict={dict} />
       <LevelPicker levels={data.levels} selected={data.startLevel} dict={dict} />
-      <CoursePath units={data.path} locale={lang} dict={dict} />
+      {data.current ? (
+        <Button className="w-full sm:w-auto" href={withLocale(lang, `/lesson/${data.current.id}`)}>
+          {dict.learn.continueLesson}
+        </Button>
+      ) : null}
+      <CoursePath units={data.path} locale={lang} dict={dict} accessibleLevels={data.accessibleLevels} />
     </div>
   );
 }

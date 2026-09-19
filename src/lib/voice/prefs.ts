@@ -1,4 +1,4 @@
-export const VOICE_PREFS_KEY = "lezu.voice";
+export const VOICE_PREFS_KEY = "lezoo.voice";
 
 export type VoicePrefs = {
   enabled: boolean;

@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { CEFR_LEVELS, DAILY_GOAL_OPTIONS } from "@/lib/constants/app";
+import { CEFR_LEVELS, COURSE_SLUGS, DAILY_GOAL_OPTIONS } from "@/lib/constants/app";
 
-export const selectCourseSchema = z.object({
-  courseId: z.string().min(1),
+export const selectCourseSlugSchema = z.object({
+  slug: z.enum(COURSE_SLUGS),
 });
 
 export const updateSettingsSchema = z.object({

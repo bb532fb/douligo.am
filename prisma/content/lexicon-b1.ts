@@ -27,6 +27,12 @@ export const LEXICON_B1: Record<B1UnitKey, Lexeme[]> = {
     entry("important", "կարևոր", "important", "важный", "karevor", "im-por-tuhnt", "vazhny", "Այս հանդիպումը կարևոր է։", "This meeting is important.", "Эта встреча важная."),
     entry("explain", "բացատրել", "to explain", "объяснить", "batsatrel", "too ik-spleyn", "obyasnit", "Խնդրում եմ բացատրել այս նախագիծը։", "Please explain this project.", "Пожалуйста, объясни этот проект."),
     entry("project", "նախագիծ", "project", "проект", "nakhagits", "prah-jekt", "proyekt", "Մենք նոր նախագիծ ունենք։", "We have a new project.", "У нас новый проект."),
+    entry("deadline", "վերջնաժամկետ", "deadline", "срок", "verjnazhamket", "ded-line", "srok", "վերջնաժամկետը մոտ է։", "The deadline is near.", "Срок близко."),
+    entry("manager", "ղեկավար", "manager", "руководитель", "ghekavar", "man-i-jer", "rukovoditel", "ղեկավարը բացատրում է նախագիծը։", "The manager explains the project.", "Руководитель объясняет проект."),
+    entry("report", "հաշվետվություն", "report", "отчёт", "hashvetvutyun", "ri-port", "otchyot", "Ես պետք է գրեմ հաշվետվություն։", "I need to write a report.", "Мне нужно написать отчёт."),
+    entry("finished", "ավարտված", "finished", "законченный", "avartvats", "fin-isht", "zakonchenny", "Նախագիծը ավարտված է։", "The project is finished.", "Проект закончен."),
+    entry("responsible", "պատասխանատու", "responsible", "ответственный", "pataskhanatu", "ri-spon-si-buhl", "otvetstvenny", "Ես պատասխանատու եմ։", "I am responsible.", "Я ответственный."),
+    entry("team", "թիմ", "team", "команда", "tim", "teem", "komanda", "Մեր թիմը լավ է աշխատում։", "Our team works well.", "Наша команда хорошо работает."),
   ],
   health: [
     entry("doctor", "բժիշկ", "doctor", "врач", "bzhishk", "dok-ter", "vrach", "Ես պետք է գնամ բժշկի։", "I need to see a doctor.", "Мне нужно к врачу."),
@@ -37,6 +43,12 @@ export const LEXICON_B1: Record<B1UnitKey, Lexeme[]> = {
     entry("tired", "հոգնած", "tired", "усталый", "hognats", "ty-erd", "ustaly", "Ես շատ հոգնած եմ այսօր։", "I am very tired today.", "Я сегодня очень усталый."),
     entry("feel", "զգում եմ", "I feel", "я чувствую", "zgum em", "eye feel", "ya chuvstvuyu", "Ես լավ եմ զգում։", "I feel well.", "Я хорошо себя чувствую."),
     entry("problem", "խնդիր", "problem", "проблема", "khndir", "prah-bluhm", "problema", "Սա մեծ խնդիր չէ։", "This is not a big problem.", "Это не большая проблема."),
+    entry("cough", "հազ", "cough", "кашель", "haz", "kof", "kashel", "Ես հազ ունեմ։", "I have a cough.", "У меня кашель."),
+    entry("fever", "ջերմություն", "fever", "температура", "jermutyun", "fee-ver", "temperatura", "Ես ջերմություն ունեմ։", "I have a fever.", "У меня температура."),
+    entry("worse", "ավելի վատ", "worse", "хуже", "aveli vat", "wurs", "khuzhe", "Ես ավելի վատ եմ զգում։", "I feel worse.", "Я чувствую себя хуже."),
+    entry("better", "ավելի լավ", "better", "лучше", "aveli lav", "bet-er", "luchshe", "Ես ավելի լավ եմ զգում։", "I feel better.", "Я чувствую себя лучше."),
+    entry("rest", "հանգստանալ", "to rest", "отдыхать", "hangstanal", "too rest", "otdykhat", "Ես պետք է հանգստանալ։", "I need to rest.", "Мне нужно отдохнуть."),
+    entry("pain", "ցավ", "pain", "боль", "tsav", "payn", "bol", "Ես ցավ ունեմ։", "I have pain.", "У меня боль."),
   ],
   opinions: [
     entry("think", "կարծում եմ", "I think", "я думаю", "kartsum em", "eye think", "ya dumayu", "Ես կարծում եմ որ սա ճիշտ է։", "I think this is right.", "Я думаю что это правильно."),
@@ -47,6 +59,12 @@ export const LEXICON_B1: Record<B1UnitKey, Lexeme[]> = {
     entry("because", "որովհետև", "because", "потому что", "vorovhetev", "bi-kawz", "potomu chto", "Ես մնում եմ որովհետև հոգնած եմ։", "I am staying because I am tired.", "Я остаюсь потому что устал."),
     entry("agree", "համաձայն եմ", "I agree", "я согласен", "hamadzayn em", "eye uh-gree", "ya soglasen", "Ես համաձայն եմ քո կարծիքի հետ։", "I agree with your opinion.", "Я согласен с твоим мнением."),
     entry("but", "բայց", "but", "но", "bayts", "but", "no", "Ես հոգնած եմ բայց աշխատում եմ։", "I am tired but I am working.", "Я устал но я работаю."),
+    entry("disagree", "համաձայն չեմ", "I disagree", "я не согласен", "hamadzayn chem", "eye dis-uh-gree", "ya ne soglasen", "Ես համաձայն չեմ։", "I disagree.", "Я не согласен."),
+    entry("is-right", "ճիշտ", "right", "правильный", "chisht", "rite", "pravilny", "Սա ճիշտ է։", "This is right.", "Это правильно."),
+    entry("wrong", "սխալ", "wrong", "неправильный", "skhal", "rong", "nepravilny", "Սա սխալ է։", "This is wrong.", "Это неправильно."),
+    entry("believe", "հավատում եմ", "I believe", "я верю", "havatum em", "eye bi-leev", "ya veryu", "Ես հավատում եմ։", "I believe this.", "Я верю."),
+    entry("seem", "թվում է", "it seems", "кажется", "tvum e", "it seemz", "kazhetsya", "թվում է որ սա դժվար է։", "It seems that this is difficult.", "Кажется что это трудно."),
+    entry("true", "ճշմարիտ", "true", "правда", "chshmarit", "troo", "pravda", "Սա ճշմարիտ է։", "This is true.", "Это правда."),
   ],
   plans: [
     entry("already", "արդեն", "already", "уже", "arden", "awl-red-ee", "uzhe", "Ես արդեն պատրաստ եմ։", "I am already ready.", "Я уже готов."),
@@ -57,6 +75,12 @@ export const LEXICON_B1: Record<B1UnitKey, Lexeme[]> = {
     entry("if", "եթե", "if", "если", "yete", "if", "yesli", "Եթե ժամանակ ունենամ կգամ։", "If I have time I will come.", "Если будет время я приду."),
     entry("when", "երբ", "when", "когда", "yerb", "wen", "kogda", "Երբ ժամանակ ունենամ կզանգեմ։", "When I have time I will call.", "Когда будет время я позвоню."),
     entry("enough", "բավական", "enough", "достаточно", "bavakan", "i-nuf", "dostatochno", "Սա բավական է այսօր։", "This is enough for today.", "Этого достаточно на сегодня."),
+    entry("rain", "անձրեվ", "rain", "дождь", "andzrev", "rayn", "dozhd", "Եթե անձրեվ գա ես տանը կմնամ։", "If it rains I will stay home.", "Если будет дождь я останусь дома."),
+    entry("stay-home", "տանը մնալ", "stay home", "остаться дома", "tany mnal", "stay hohm", "ostatsya doma", "Ես տանը մնալ կմամ։", "I will stay home.", "Я останусь дома."),
+    entry("as-soon-as", "հենց որ", "as soon as", "как только", "hents vor", "az soon az", "kak tolko", "հենց որ ժամանակ ունենամ կզանգեմ։", "As soon as I have time I will call.", "Как только будет время я позвоню."),
+    entry("call-back", "ետ զանգել", "to call back", "перезвонить", "yet zangel", "too kawl bak", "perezvonit", "Ես կետ զանգելեմ։", "I will call back.", "Я перезвоню."),
+    entry("next-step", "հաջորդ քայլ", "next step", "следующий шаг", "hachord kayl", "nekst step", "sleduyushchiy shag", "հաջորդ քայլը պարզ է։", "The next step is clear.", "Следующий шаг ясен."),
+    entry("ready-plan", "պատրաստ ծրագիր", "ready plan", "готовый план", "patrast tsragir", "red-ee plan", "gotovy plan", "Ես արդեն պատրաստ ծրագիր ունեմ։", "I already have a ready plan.", "У меня уже есть готовый план."),
   ],
   experiences: [
     entry("last-year", "անցյալ տարի", "last year", "в прошлом году", "antsyal tari", "last yeer", "v proshlom godu", "Անցյալ տարի Երևանում էի։", "Last year I was in Yerevan.", "В прошлом году я был в Ереване."),
@@ -67,6 +91,12 @@ export const LEXICON_B1: Record<B1UnitKey, Lexeme[]> = {
     entry("have-been", "եղել եմ", "I have been", "я бывал", "yeghel em", "eye hav bin", "ya byval", "Ես այնտեղ եղել եմ։", "I have been there.", "Я там бывал."),
     entry("once", "մի անգամ", "once", "однажды", "mi angam", "wunts", "odnazhdy", "Ես մի անգամ այնտեղ էի։", "I was there once.", "Я однажды там был."),
     entry("never", "երբեք", "never", "никогда", "yerbek", "nev-er", "nikogda", "Ես երբեք չեմ մոռանում։", "I never forget.", "Я никогда не забываю."),
+    entry("ever", "երբեւէ", "ever", "когда-либо", "yerteve", "ev-er", "kogda libo", "Դու երբեւէ այնտեղ եղել ես։", "Have you ever been there?", "Ты когда-либо там бывал?"),
+    entry("yet", "դեռ ոչ", "yet", "ещё не", "der voch", "yet", "yeshchyo ne", "Ես դեռ ոչ չեմ որոշել։", "I have not decided yet.", "Я ещё не решил."),
+    entry("just", "հենց նոր", "just", "только что", "hents nor", "just", "tolko chto", "Ես հենց նոր եկել եմ։", "I have just arrived.", "Я только что пришёл."),
+    entry("since", "սկսած", "since", "с тех пор", "sksats", "sins", "s tekh por", "Ես սկսած առավոտից գլխացավ ունեմ։", "I have had a headache since morning.", "У меня головная боль с утра."),
+    entry("for-years", "տարիներ շարունակ", "for years", "годами", "tariner sharunak", "for yeerz", "godami", "Ես տարիներ շարունակ այստեղ եմ ապրել։", "I have lived here for years.", "Я годами здесь живу."),
+    entry("have-lived", "ապրել եմ", "I have lived", "я жил", "aprel em", "eye hav livd", "ya zhil", "Ես այստեղ երկար ժամանակ ապրել եմ։", "I have lived here for a long time.", "Я здесь долго жил."),
   ],
   reasons: [
     entry("thats-why", "դրա համար", "that's why", "поэтому", "dra hamar", "thats why", "poetomu", "Ես հոգնած եմ դրա համար մնում եմ։", "I am tired that's why I am staying.", "Я устал поэтому я остаюсь."),
@@ -77,6 +107,8 @@ export const LEXICON_B1: Record<B1UnitKey, Lexeme[]> = {
     entry("so", "ուրեմն", "so", "значит", "uremn", "soh", "znachit", "Ուրեմն մենք սկսում ենք։", "So we are starting.", "Значит мы начинаем."),
     entry("also", "նաև", "also", "также", "naev", "awl-soh", "takzhe", "Ես նաև համաձայն եմ։", "I also agree.", "Я также согласен."),
     entry("or", "կամ", "or", "или", "kam", "or", "ili", "Թեյ կամ սուրճ։", "Tea or coffee.", "Чай или кофе."),
+    entry("therefore", "հետեվաբեր", "therefore", "следовательно", "hetevaber", "thair-for", "sledovatelno", "Սա հետեվաբեր կարեվոր է։", "Therefore this is important.", "Следовательно это важно."),
+    entry("even-though", "նույն չնայած", "even though", "даже хотя", "nuyysk chnayats", "ee-ven thoh", "dazhe khotya", "նույն չնայած դժվար է ես համաձայն եմ։", "Even though it is difficult I agree.", "Даже хотя это трудно я согласен."),
   ],
 };
 
@@ -95,6 +127,7 @@ export const SENTENCES_B1: Record<B1UnitKey, Array<{ hy: string; en: string; ru:
   ],
   plans: [
     { hy: "Եթե ժամանակ ունենամ կուզենայի գնալ", en: "If I have time I would like to go", ru: "Если будет время я хотел бы поехать" },
+    { hy: "Եթե անձրեվ գա ես տանը կմնամ", en: "If it rains I will stay home", ru: "Если будет дождь я останусь дома" },
     { hy: "Ես արդեն որոշել եմ այս ծրագիրը", en: "I have already decided this plan", ru: "Я уже решил этот план" },
   ],
   experiences: [

@@ -13,6 +13,8 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/register">
   return { title: dict.auth.register };
 }
 
-export default function RegisterPage() {
-  return <AuthForm mode="register" action={registerAction} />;
+export default async function RegisterPage({ searchParams }: PageProps<"/[lang]/register">) {
+  const query = await searchParams;
+  const callbackUrl = typeof query.callbackUrl === "string" ? query.callbackUrl : undefined;
+  return <AuthForm mode="register" action={registerAction} callbackUrl={callbackUrl} />;
 }

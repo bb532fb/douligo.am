@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils/cn";
+import { APP_NAME } from "@/lib/constants/app";
 import { Mascot } from "@/components/brand/mascot";
 
 type LogoProps = {
@@ -19,7 +20,7 @@ export function Logo({ size = "md", showWordmark = true, className }: LogoProps)
   return (
     <span className={cn("inline-flex items-center gap-2 font-extrabold tracking-tight text-brand", className)}>
       <Mascot size={scale.mascot} mood="happy" animated={false} className="shrink-0" />
-      {showWordmark ? <span className={scale.text}>Lezu</span> : null}
+      {showWordmark ? <span className={scale.text}>{APP_NAME}</span> : null}
     </span>
   );
 }

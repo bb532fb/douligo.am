@@ -2,7 +2,9 @@ import { APP_ERRORS } from "@/lib/constants/copy";
 import { AppError } from "@/lib/errors/app-error";
 import { courseRepository } from "@/server/repositories/course-repository";
 import { lessonRepository } from "@/server/repositories/lesson-repository";
+import { masteryRepository } from "@/server/repositories/mastery-repository";
 import { progressRepository } from "@/server/repositories/progress-repository";
+import { levelUnlockService } from "@/server/services/level-unlock-service";
 
 export const courseService = {
   listPublished() {
@@ -10,11 +12,35 @@ export const courseService = {
   },
 
   async requireActiveCourse(userId: string) {
-    const enrollment = await courseRepository.getActiveEnrollment(userId);
-    if (!enrollment) {
+    const active = await courseRepository.getActiveEnrollment(userId);
+    if (active) {
+      return active.course;
+    }
+
+    const latest = await courseRepository.getLatestEnrollment(userId);
+    if (!latest) {
       return null;
     }
-    return enrollment.course;
+
+    await courseRepository.setActiveCourse(userId, latest.courseId);
+    return latest.course;
+  },
+
+  async getActivePlacement(userId: string) {
+    const course = await this.requireActiveCourse(userId);
+    if (!course) {
+      return null;
+    }
+
+    const [masteries, units] = await Promise.all([
+      masteryRepository.listLevelMasteries(userId, course.id),
+      lessonRepository.listCoursePath(course.id),
+    ]);
+    return {
+      course,
+      levels: [...new Set(units.map((unit) => unit.level))],
+      needsPlacement: masteries.length === 0,
+    };
   },
 
   async selectCourse(userId: string, courseId: string) {
@@ -24,7 +50,16 @@ export const courseService = {
     }
 
     await courseRepository.setActiveCourse(userId, courseId);
-    return course;
+    const masteries = await masteryRepository.listLevelMasteries(userId, courseId);
+    return { course, needsPlacement: masteries.length === 0 };
+  },
+
+  async selectCourseBySlug(userId: string, slug: string) {
+    const course = await courseRepository.findBySlug(slug);
+    if (!course) {
+      throw new AppError("NOT_FOUND", APP_ERRORS.notFound, 404);
+    }
+    return this.selectCourse(userId, course.id);
   },
 
   async setStartLevel(userId: string, startLevel: string) {
@@ -40,5 +75,6 @@ export const courseService = {
     }
 
     await progressRepository.setStartLevel(userId, course.id, startLevel);
+    await levelUnlockService.resetPlacement(userId, course.id, startLevel);
   },
 };

@@ -1,6 +1,7 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { LOCALES, type Locale } from "@/i18n/config";
 import { replaceLocale } from "@/i18n/path";
 import { cn } from "@/lib/utils/cn";
@@ -19,12 +20,6 @@ type LocaleSwitcherProps = {
 export function LocaleSwitcher({ className }: LocaleSwitcherProps) {
   const { locale, dict } = useI18n();
   const pathname = usePathname();
-  const router = useRouter();
-
-  function select(next: Locale) {
-    router.push(replaceLocale(pathname, next));
-    router.refresh();
-  }
 
   return (
     <div
@@ -38,11 +33,13 @@ export function LocaleSwitcher({ className }: LocaleSwitcherProps) {
       {LOCALES.map((item) => {
         const active = item === locale;
         return (
-          <button
+          <Link
             key={item}
-            type="button"
-            onClick={() => select(item)}
-            aria-pressed={active}
+            href={replaceLocale(pathname, item)}
+            hrefLang={item}
+            replace
+            prefetch
+            aria-current={active ? "page" : undefined}
             className={cn(
               "rounded-xl px-2.5 py-1.5 text-xs font-black uppercase tracking-wide",
               active ? "bg-brand text-white" : "text-ink-soft hover:bg-paper",
@@ -50,7 +47,7 @@ export function LocaleSwitcher({ className }: LocaleSwitcherProps) {
           >
             <span aria-hidden="true">{FLAGS[item]} </span>
             {item}
-          </button>
+          </Link>
         );
       })}
     </div>

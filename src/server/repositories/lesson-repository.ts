@@ -2,8 +2,8 @@ import { CACHE_TTL_SEC, rememberCatalog } from "@/lib/cache/remember";
 import { prisma } from "@/lib/db/prisma";
 
 const playInclude = {
-  unit: { include: { course: { select: { sourceLanguage: true, targetLanguage: true } } } },
-  questions: { include: { options: true }, orderBy: { order: "asc" as const } },
+  unit: { include: { course: { select: { sourceLanguage: true, targetLanguage: true, id: true } } } },
+  questions: { include: { options: true, topic: true }, orderBy: { order: "asc" as const } },
 } as const;
 
 export const lessonRepository = {
@@ -15,7 +15,7 @@ export const lessonRepository = {
           where: { id: lessonId },
           include: {
             unit: { include: { course: true } },
-            questions: { include: { options: true }, orderBy: { order: "asc" } },
+            questions: { include: { options: true, topic: true }, orderBy: { order: "asc" } },
             vocabulary: { include: { vocabularyWord: true } },
           },
         }),
@@ -41,7 +41,11 @@ export const lessonRepository = {
       () =>
         prisma.question.findUnique({
           where: { id: questionId },
-          include: { options: true },
+          include: {
+            options: true,
+            topic: true,
+            lesson: { include: { unit: { include: { course: true } } } },
+          },
         }),
       CACHE_TTL_SEC.lesson,
     );
@@ -61,7 +65,7 @@ export const lessonRepository = {
     return rememberCatalog(`unlock:${courseId}`, () =>
       prisma.lesson.findMany({
         where: { unit: { courseId } },
-        select: { id: true, unit: { select: { level: true } } },
+        select: { id: true, kind: true, unit: { select: { level: true } } },
         orderBy: [{ unit: { order: "asc" } }, { order: "asc" }],
       }),
     );

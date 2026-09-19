@@ -10,6 +10,10 @@ const PROTECTED_PREFIXES = [
   "/vocabulary",
   "/settings",
   "/courses",
+  "/onboarding",
+  "/analytics",
+  "/admin",
+  "/start",
 ];
 
 function hasSessionCookie(request: NextRequest): boolean {

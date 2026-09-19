@@ -8,7 +8,10 @@ function redisUrl(): string | undefined {
 }
 
 function createRedis(url: string) {
-  const client = createClient({ url });
+  const client = createClient({
+    url,
+    socket: { connectTimeout: 2000 },
+  });
   client.on("error", (error) => {
     console.error("redis", error);
   });

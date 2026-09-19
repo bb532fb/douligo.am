@@ -13,6 +13,8 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/login">): 
   return { title: dict.auth.login };
 }
 
-export default function LoginPage() {
-  return <AuthForm mode="login" action={loginAction} />;
+export default async function LoginPage({ searchParams }: PageProps<"/[lang]/login">) {
+  const query = await searchParams;
+  const callbackUrl = typeof query.callbackUrl === "string" ? query.callbackUrl : undefined;
+  return <AuthForm mode="login" action={loginAction} callbackUrl={callbackUrl} />;
 }

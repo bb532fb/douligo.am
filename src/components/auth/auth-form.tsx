@@ -6,19 +6,22 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useI18n } from "@/components/i18n/i18n-provider";
+import type { Locale } from "@/i18n/config";
 import { withLocale } from "@/i18n/path";
 import type { ActionResult } from "@/server/actions/auth-actions";
 
 type AuthFormProps = {
   mode: "login" | "register";
   action: (state: ActionResult, formData: FormData) => Promise<ActionResult>;
+  callbackUrl?: string;
 };
 
 const initial: ActionResult = { ok: false };
 
-export function AuthForm({ mode, action }: AuthFormProps) {
+export function AuthForm({ mode, action, callbackUrl }: AuthFormProps) {
   const [state, formAction, pending] = useActionState(action, initial);
   const { locale, dict } = useI18n();
+  const switchHref = authSwitchHref(locale, mode, callbackUrl);
 
   return (
     <Card>
@@ -26,6 +29,7 @@ export function AuthForm({ mode, action }: AuthFormProps) {
         {mode === "login" ? `👋 ${dict.auth.login}` : `🎉 ${dict.auth.register}`}
       </h1>
       <form action={formAction} className="space-y-4">
+        {callbackUrl ? <input type="hidden" name="callbackUrl" value={callbackUrl} /> : null}
         {mode === "register" ? <Input name="name" label={dict.auth.name} autoComplete="name" required /> : null}
         <Input name="email" type="email" label={dict.auth.email} autoComplete="email" required />
         <Input
@@ -55,13 +59,18 @@ export function AuthForm({ mode, action }: AuthFormProps) {
       </form>
       <p className="mt-6 text-center text-sm font-semibold text-ink-soft">
         {mode === "login" ? dict.auth.noAccount : dict.auth.alreadyHaveAccount}{" "}
-        <Link
-          className="font-extrabold text-teal"
-          href={withLocale(locale, mode === "login" ? "/register" : "/login")}
-        >
+        <Link className="font-extrabold text-teal" href={switchHref}>
           {mode === "login" ? dict.auth.register : dict.auth.login}
         </Link>
       </p>
     </Card>
   );
+}
+
+function authSwitchHref(locale: Locale, mode: "login" | "register", callbackUrl?: string) {
+  const path = withLocale(locale, mode === "login" ? "/register" : "/login");
+  if (!callbackUrl) {
+    return path;
+  }
+  return `${path}?callbackUrl=${encodeURIComponent(callbackUrl)}`;
 }

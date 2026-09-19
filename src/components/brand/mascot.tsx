@@ -1,3 +1,4 @@
+import { APP_NAME } from "@/lib/constants/app";
 import { cn } from "@/lib/utils/cn";
 
 export type MascotMood = "happy" | "wow" | "sad" | "celebrate" | "think";
@@ -19,7 +20,7 @@ export function Mascot({ mood = "happy", size = 160, animated = true, className 
       height={size}
       className={cn(motionClass, className)}
       role="img"
-      aria-label="Lezu mascot"
+      aria-label={`${APP_NAME} mascot`}
     >
       <ellipse cx="100" cy="182" rx="46" ry="9" fill="rgba(60,60,60,0.12)" />
       {mood === "celebrate" ? <Sparkles /> : null}

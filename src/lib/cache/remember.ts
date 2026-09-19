@@ -1,6 +1,6 @@
 import { redisGet, redisIncr, redisSet } from "@/lib/db/redis";
 
-const VERSION_KEY = "lezu:content:v";
+const VERSION_KEY = "lezoo:content:v";
 
 export const CACHE_TTL_SEC = {
   catalog: 60 * 60,
@@ -38,7 +38,7 @@ export async function rememberCatalog<T>(
   ttlSec: number = CACHE_TTL_SEC.catalog,
 ): Promise<T> {
   const version = (await redisGet(VERSION_KEY)) ?? "0";
-  return remember(`lezu:c:${version}:${name}`, ttlSec, load);
+  return remember(`lezoo:c:${version}:${name}`, ttlSec, load);
 }
 
 export async function bumpContentCache(): Promise<void> {
@@ -46,5 +46,5 @@ export async function bumpContentCache(): Promise<void> {
 }
 
 export function weeklyLeaderboardKey(weekStart: Date): string {
-  return `lezu:lb:week:${weekStart.toISOString()}`;
+  return `lezoo:lb:week:${weekStart.toISOString()}`;
 }

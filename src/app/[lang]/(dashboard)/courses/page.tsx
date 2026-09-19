@@ -1,11 +1,9 @@
-import { selectCourseAction } from "@/server/actions/course-actions";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { CourseCard } from "@/components/learning/course-card";
 import { Mascot } from "@/components/brand/mascot";
 import { requireUser } from "@/lib/auth/session";
 import { hasLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
-import type { CourseSlug } from "@/lib/constants/app";
+import { isCourseSlug } from "@/lib/constants/app";
 import { courseService } from "@/server/services/course-service";
 
 const FLAGS: Record<string, string> = {
@@ -17,48 +15,42 @@ const FLAGS: Record<string, string> = {
 
 const SMILES = ["🌟", "🎈", "🎯", "🚀"];
 
-function isCourseSlug(value: string): value is CourseSlug {
-  return value in FLAGS;
-}
-
 export default async function CoursesPage({ params }: PageProps<"/[lang]/courses">) {
   const { lang } = await params;
   if (!hasLocale(lang)) {
     return null;
   }
 
-  await requireUser();
+  const user = await requireUser();
   const dict = await getDictionary(lang);
-  const courses = await courseService.listPublished();
+  const [courses, active] = await Promise.all([
+    courseService.listPublished(),
+    courseService.requireActiveCourse(user.id),
+  ]);
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Mascot size={80} mood="wow" />
-        <h1 className="text-3xl font-black">{dict.learn.selectCourse}</h1>
+        <div>
+          <h1 className="text-3xl font-black">{dict.learn.selectCourse}</h1>
+          <p className="mt-1 font-semibold text-ink-soft">{dict.learn.selectCourseLead}</p>
+        </div>
       </div>
       <ul className="grid gap-4 sm:grid-cols-2">
         {courses.map((course, index) => {
           const slug = isCourseSlug(course.slug) ? course.slug : null;
           return (
             <li key={course.id}>
-              <Card className="space-y-4">
-                <p className="text-3xl">
-                  {SMILES[index % SMILES.length]} {FLAGS[course.slug] ?? "🌐"}
-                </p>
-                <h2 className="text-xl font-black">
-                  {slug ? dict.home.pairs[slug] : course.title}
-                </h2>
-                <p className="font-semibold text-ink-soft">
-                  {slug ? dict.home.pairLeads[slug] : course.description}
-                </p>
-                <form action={selectCourseAction}>
-                  <input type="hidden" name="courseId" value={course.id} />
-                  <Button type="submit" className="w-full">
-                    {dict.common.continue}
-                  </Button>
-                </form>
-              </Card>
+              <CourseCard
+                slug={course.slug}
+                title={slug ? dict.home.pairs[slug] : course.title}
+                lead={slug ? dict.home.pairLeads[slug] : course.description}
+                flag={FLAGS[course.slug] ?? "🌐"}
+                smile={SMILES[index % SMILES.length] ?? "🌟"}
+                continueLabel={dict.common.continue}
+                current={course.id === active?.id}
+              />
             </li>
           );
         })}

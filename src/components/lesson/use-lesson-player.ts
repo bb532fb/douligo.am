@@ -36,33 +36,49 @@ export function useLessonPlayer(lessonId: string, initial?: LessonSession | null
   const [busy, setBusy] = useState(false);
   const question = questions[index];
   const progress = questions.length === 0 ? 0 : Math.round((index / questions.length) * 100);
+  const [startedAt, setStartedAt] = useState(() => Date.now());
+
+  async function withBusy(work: () => Promise<void>) {
+    setBusy(true);
+    try {
+      await work();
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function start() {
-    setBusy(true);
     setError(null);
-    const response = await startLessonAction({ lessonId });
-    setBusy(false);
-    if (!response.ok) {
-      setError(response.message);
-      return;
-    }
-    setAttemptId(response.data.attemptId);
-    setQuestions(response.data.questions);
-    setIndex(response.data.resumeIndex);
+    await withBusy(async () => {
+      const response = await startLessonAction({ lessonId });
+      if (!response.ok) {
+        setError(response.message);
+        return;
+      }
+      setAttemptId(response.data.attemptId);
+      setQuestions(response.data.questions);
+      setIndex(response.data.resumeIndex);
+      setStartedAt(Date.now());
+    });
   }
 
   async function onSubmit(answer: AnswerPayload) {
     if (!attemptId || !question || feedback || busy) {
       return;
     }
-    setBusy(true);
-    const response = await submitAnswerAction({ attemptId, questionId: question.id, answer });
-    setBusy(false);
-    if (!response.ok) {
-      setError(response.message);
-      return;
-    }
-    setFeedback(response.data);
+    await withBusy(async () => {
+      const response = await submitAnswerAction({
+        attemptId,
+        questionId: question.id,
+        answer,
+        timeSpentMs: Date.now() - startedAt,
+      });
+      if (!response.ok) {
+        setError(response.message);
+        return;
+      }
+      setFeedback(response.data);
+    });
   }
 
   async function onNext() {
@@ -72,16 +88,17 @@ export function useLessonPlayer(lessonId: string, initial?: LessonSession | null
     if (index + 1 < questions.length) {
       setIndex((value) => value + 1);
       setFeedback(null);
+      setStartedAt(Date.now());
       return;
     }
-    setBusy(true);
-    const response = await completeLessonAction({ attemptId });
-    setBusy(false);
-    if (!response.ok) {
-      setError(response.message);
-      return;
-    }
-    setResult(response.data);
+    await withBusy(async () => {
+      const response = await completeLessonAction({ attemptId });
+      if (!response.ok) {
+        setError(response.message);
+        return;
+      }
+      setResult(response.data);
+    });
   }
 
   return { question, progress, index, questions, feedback, result, error, busy, start, onSubmit, onNext };

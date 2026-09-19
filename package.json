@@ -1,5 +1,5 @@
 {
-  "name": "lezu",
+  "name": "lezoo",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -14,6 +14,7 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
     "db:sync-content": "tsx --env-file=.env prisma/sync-content.ts",
+    "db:backfill-meta": "tsx --env-file=.env prisma/backfill-meta.ts",
     "db:studio": "prisma studio"
   },
   "prisma": {

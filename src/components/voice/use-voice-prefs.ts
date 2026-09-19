@@ -9,7 +9,7 @@ import {
   type VoicePrefs,
 } from "@/lib/voice/prefs";
 
-const VOICE_EVENT = "lezu-voice";
+const VOICE_EVENT = "lezoo-voice";
 
 let snapshot = DEFAULT_VOICE_PREFS;
 let snapshotKey = "__unset__";

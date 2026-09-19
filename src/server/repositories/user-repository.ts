@@ -12,7 +12,14 @@ export const userRepository = {
     });
   },
 
-  create(input: { email: string; name: string; passwordHash: string }) {
+  findAccountById(id: string) {
+    return prisma.user.findUnique({
+      where: { id },
+      select: { id: true, email: true, name: true, role: true, status: true },
+    });
+  },
+
+  create(input: { email: string; name: string; passwordHash: string; hearts?: number }) {
     return prisma.user.create({
       data: {
         email: input.email.toLowerCase(),
@@ -22,6 +29,7 @@ export const userRepository = {
           create: {
             displayName: input.name,
             nativeLanguage: "HY",
+            ...(input.hearts != null ? { hearts: input.hearts } : {}),
           },
         },
         streak: {

@@ -11,7 +11,7 @@ export function audioCacheKey(text: string, lang: string, rate: number): string 
 }
 
 function redisAudioKey(key: string): string {
-  return `lezu:audio:${createHash("sha256").update(key).digest("hex")}`;
+  return `lezoo:audio:${createHash("sha256").update(key).digest("hex")}`;
 }
 
 function memoryGet(key: string): Uint8Array | null {

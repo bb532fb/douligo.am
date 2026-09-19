@@ -1,6 +1,7 @@
+import { LEXICON_A2_COMPARE, LEXICON_A2_INVITES } from "./lexicon-a2-extra";
 import type { Lexeme } from "./types";
 
-export type A2UnitKey = "routine" | "city" | "travel" | "shopping" | "past" | "future";
+export type A2UnitKey = "city" | "travel" | "past" | "future" | "compare" | "invites";
 
 function entry(
   key: string,
@@ -18,16 +19,6 @@ function entry(
 }
 
 export const LEXICON_A2: Record<A2UnitKey, Lexeme[]> = {
-  routine: [
-    entry("today", "այսօր", "today", "сегодня", "aysor", "tuh-day", "sevodnya", "Այսօր աշխատում եմ։", "I work today.", "Я сегодня работаю."),
-    entry("now", "հիմա", "now", "сейчас", "hima", "now", "seychas", "Հիմա զբաղված եմ։", "I am busy now.", "Я сейчас занят."),
-    entry("always", "միշտ", "always", "всегда", "misht", "awl-wayz", "vsegda", "Ես միշտ կարդում եմ։", "I always read.", "Я всегда читаю."),
-    entry("sometimes", "երբեմն", "sometimes", "иногда", "yerbemn", "sum-tymz", "inogda", "Երբեմն ուշանում եմ։", "I am sometimes late.", "Я иногда опаздываю."),
-    entry("morning-time", "առավոտ", "morning", "утро", "aravot", "mor-ning", "utra", "Առավոտը հանգիստ է։", "The morning is quiet.", "Утро тихое."),
-    entry("evening", "երեկո", "evening", "вечер", "ereko", "eev-ning", "vecher", "Երեկոյան տանն եմ։", "I am home in the evening.", "Вечером я дома."),
-    entry("eat", "ուտում եմ", "I eat", "я ем", "utum em", "eye eet", "ya yem", "Առավոտյան ես ուտում եմ։", "I eat in the morning.", "Утром я ем."),
-    entry("work-verb", "աշխատում եմ", "I work", "я работаю", "ashkhatum em", "eye werk", "ya rabotayu", "Ես այսօր աշխատում եմ։", "I work today.", "Я сегодня работаю."),
-  ],
   city: [
     entry("street", "փողոց", "street", "улица", "poghots", "street", "ulitsa", "Այս փողոցը երկար է։", "This street is long.", "Эта улица длинная."),
     entry("city", "քաղաք", "city", "город", "kaghak", "sit-ee", "gorat", "Երևանը գեղեցիկ քաղաք է։", "Yerevan is a beautiful city.", "Ереван — красивый город."),
@@ -37,6 +28,12 @@ export const LEXICON_A2: Record<A2UnitKey, Lexeme[]> = {
     entry("left", "ձախ", "left", "налево", "dzakh", "left", "nalevo", "Խանութը ձախ է։", "The shop is on the left.", "Магазин налево."),
     entry("right", "աջ", "right", "направо", "aj", "rite", "napravo", "Դպրոցը աջ է։", "The school is on the right.", "Школа направо."),
     entry("park", "այգի", "park", "парк", "aygi", "park", "park", "Այգին քաղաքում է։", "The park is in the city.", "Парк в городе."),
+    entry("bank", "բանկ", "bank", "банк", "bank", "bank", "bank", "բանկը մոտ է։", "The bank is near.", "Банк близко."),
+    entry("pharmacy", "դեղատուն", "pharmacy", "аптека", "deghatun", "far-muh-see", "apteka", "դեղատունը աջ է։", "The pharmacy is on the right.", "Аптека направо."),
+    entry("behind", "հետեւում", "behind", "за", "heteum", "bi-hynd", "za", "Այգին հետեւում է։", "The park is behind.", "Парк сзади."),
+    entry("between", "միջեւ", "between", "между", "mijev", "bi-tween", "mezhdu", "Խանութը միջեւ է։", "The shop is between.", "Магазин между."),
+    entry("next-to", "կողքին", "next to", "рядом с", "koghin", "nekst too", "ryadom s", "բանկը կողքին է։", "The bank is next to the park.", "Банк рядом с парком."),
+    entry("straight", "ուղիղ", "straight", "прямо", "ughigh", "strayt", "pryamo", "Գնա ուղիղ։", "Go straight.", "Иди прямо."),
   ],
   travel: [
     entry("bus", "ավտոբուս", "bus", "автобус", "avtobus", "bus", "aftobus", "Ես ավտոբուս եմ նստում։", "I take the bus.", "Я еду на автобусе."),
@@ -47,16 +44,12 @@ export const LEXICON_A2: Record<A2UnitKey, Lexeme[]> = {
     entry("wait", "սպասել", "to wait", "ждать", "spasel", "too wayt", "zhdat", "Մենք կայարանում ենք սպասում։", "We are waiting at the station.", "Мы ждём на вокзале."),
     entry("train", "գնացք", "train", "поезд", "gnatsq", "trayn", "poyezd", "Գնացքը ուշանում է։", "The train is late.", "Поезд опаздывает."),
     entry("map", "քարտեզ", "map", "карта", "kartez", "map", "karta", "Ինձ քարտեզ է պետք։", "I need a map.", "Мне нужна карта."),
-  ],
-  shopping: [
-    entry("buy", "գնել", "to buy", "купить", "gnel", "too by", "kupit", "Ես ուզում եմ հաց գնել։", "I want to buy bread.", "Я хочу купить хлеб."),
-    entry("price", "գին", "price", "цена", "gin", "prys", "tsena", "Գինը լավ է։", "The price is good.", "Цена хорошая."),
-    entry("cheap", "էժան", "cheap", "дешёвый", "ezhan", "cheep", "deshovyy", "Այս հացը էժան է։", "This bread is cheap.", "Этот хлеб дешёвый."),
-    entry("expensive", "թանկ", "expensive", "дорогой", "tank", "ik-spen-siv", "dorogoy", "Այս հյուրանոցը թանկ է։", "This hotel is expensive.", "Эта гостиница дорогая."),
-    entry("money", "փող", "money", "деньги", "pogh", "mun-ee", "dengi", "Ինձ փող է պետք։", "I need money.", "Мне нужны деньги."),
-    entry("clothes", "հագուստ", "clothes", "одежда", "hagust", "klohz", "odezhda", "Ես հագուստ եմ ուզում գնել։", "I want to buy clothes.", "Я хочу купить одежду."),
-    entry("how-much", "որքան", "how much", "сколько стоит", "vorkan", "how much", "skolko stoit", "Որքա՞ն է գինը։", "How much is the price?", "Сколько стоит?"),
-    entry("size", "չափս", "size", "размер", "chaps", "syz", "razmer", "Ինձ այս չափսն է պետք։", "I need this size.", "Мне нужен этот размер."),
+    entry("passport", "անձնագիր", "passport", "паспорт", "andznagir", "pas-port", "pasport", "Ինձ անձնագիր է պետք։", "I need a passport.", "Мне нужен паспорт."),
+    entry("bag", "պայուսակ", "bag", "сумка", "payusak", "bag", "sumka", "Իմ պայուսակը այստեղ է։", "My bag is here.", "Моя сумка здесь."),
+    entry("late", "ուշ", "late", "поздний", "ush", "layt", "pozdniy", "Գնացքը ուշ է։", "The train is late.", "Поезд поздний."),
+    entry("platform", "եռթակ", "platform", "платформа", "yertak", "plat-form", "platforma", "եռթակը այստեղ է։", "The platform is here.", "Платформа здесь."),
+    entry("fly", "թռչել", "to fly", "лететь", "trchel", "too fly", "letet", "Ես ուզում եմ թռչել։", "I want to fly.", "Я хочу лететь."),
+    entry("delay", "ուշացում", "delay", "задержка", "ushatsum", "di-lay", "zaderzhka", "ուշացում կա։", "There is a delay.", "Есть задержка."),
   ],
   past: [
     entry("yesterday", "երեկ", "yesterday", "вчера", "yereg", "yes-ter-day", "vchera", "Երեկ ես տանն էի։", "Yesterday I was at home.", "Вчера я был дома."),
@@ -67,42 +60,71 @@ export const LEXICON_A2: Record<A2UnitKey, Lexeme[]> = {
     entry("saw", "տեսա", "I saw", "я видел", "tesa", "eye saw", "ya videl", "Երեկ ես ընկերոջս տեսա։", "Yesterday I saw my friend.", "Вчера я видел друга."),
     entry("with", "հետ", "with", "с", "het", "with", "s", "Ես գնացի ընկերոջս հետ։", "I went with my friend.", "Я пошёл с другом."),
     entry("for", "համար", "for", "для", "hamar", "for", "dlya", "Սա քեզ համար է։", "This is for you.", "Это для тебя."),
+    entry("did-not", "չարեցի", "I did not", "я не сделал", "charetsi", "eye did not", "ya ne sdelal", "Ես դպրոց չգնացի։", "I did not go to school.", "Я не пошёл в школу."),
+    entry("did-you", "արեցի՞ր", "did you", "ты сделал", "aretsir", "did yoo", "ty sdelal", "Դու տեսար իմ ընկերոջը։", "Did you see my friend?", "Ты видел моего друга?"),
+    entry("worked", "աշխատեցի", "I worked", "я работал", "ashkhatetsi", "eye werkt", "ya rabotal", "Երեկ ես աշխատեցի։", "Yesterday I worked.", "Вчера я работал."),
+    entry("stayed", "մնացի", "I stayed", "я остался", "mnatsi", "eye stayd", "ya ostalsya", "Երեկ ես տանը մնացի։", "Yesterday I stayed at home.", "Вчера я остался дома."),
+    entry("came", "եկա", "I came", "я пришёл", "yeka", "eye kaym", "ya prishol", "Երեկ ես տուն եկա։", "Yesterday I came home.", "Вчера я пришёл домой."),
+    entry("ago", "առաջ", "ago", "назад", "araj", "uh-go", "nazad", "Երկու օր առաջ ես տանն էի։", "Two days ago I was at home.", "Два дня назад я был дома."),
   ],
   future: [
     entry("tomorrow", "վաղը", "tomorrow", "завтра", "vaghy", "tuh-mor-oh", "zavtra", "Վաղը ես տուն կգնամ։", "Tomorrow I will go home.", "Завтра я пойду домой."),
     entry("soon", "շուտով", "soon", "скоро", "shutov", "soon", "skoro", "Շուտով կգամ։", "I will come soon.", "Я скоро приду."),
     entry("will-go", "կգնամ", "I will go", "я пойду", "kgnam", "eye will go", "ya poydu", "Վաղը ես կգնամ դպրոց։", "Tomorrow I will go to school.", "Завтра я пойду в школу."),
-    entry("can", "կարող եմ", "I can", "я могу", "karogh em", "eye kan", "ya mogu", "Ես կարող եմ օգնել։", "I can help.", "Я могу помочь."),
     entry("need", "ինձ պետք է", "I need", "мне нужно", "indz petk e", "eye need", "mne nuzhno", "Ինձ տոմս է պետք։", "I need a ticket.", "Мне нужен билет."),
     entry("next-week", "հաջորդ շաբաթ", "next week", "на следующей неделе", "hachord shabat", "nekst week", "na sleduyushchey nedele", "Հաջորդ շաբաթ կգամ։", "I will come next week.", "Я приеду на следующей неделе."),
     entry("will-be", "կլինեմ", "I will be", "я буду", "klinem", "eye will bee", "ya budu", "Վաղը ես տանը կլինեմ։", "Tomorrow I will be at home.", "Завтра я буду дома."),
     entry("later", "ավելի ուշ", "later", "позже", "aveli ush", "lay-ter", "pozzhe", "Ավելի ուշ կխոսենք։", "We will talk later.", "Поговорим позже."),
+    entry("going-to", "պատրաստվում եմ", "I am going to", "я собираюсь", "patrastvum em", "eye am go-ing too", "ya sobirayus", "Ես պատրաստվում եմ տուն գնալ։", "I am going to go home.", "Я собираюсь пойти домой."),
+    entry("will-not", "չեմ լինի", "I will not", "я не буду", "chem lini", "eye will not", "ya ne budu", "Ես ուշ չեմ լինի։", "I will not be late.", "Я не буду поздно."),
+    entry("must", "պետք է", "I must", "я должен", "petk e", "eye must", "ya dolzhen", "Ես պետք է գնամ։", "I must go.", "Я должен идти."),
+    entry("should", "պետք է որ", "I should", "мне следует", "petk e vor", "eye shood", "mne sleduyet", "Ես պետք է որ հանգստանամ։", "I should rest.", "Мне следует отдохнуть."),
+    entry("ready", "պատրաստ", "ready", "готов", "patrast", "red-ee", "gotov", "Ես պատրաստ եմ։", "I am ready.", "Я готов."),
+    entry("early", "վաղ", "early", "рано", "vagh", "ur-lee", "rano", "Ես վաղ եմ գալիս։", "I come early.", "Я прихожу рано."),
   ],
+  compare: LEXICON_A2_COMPARE,
+  invites: LEXICON_A2_INVITES,
 };
 
 export const SENTENCES_A2: Record<A2UnitKey, Array<{ hy: string; en: string; ru: string }>> = {
-  routine: [
-    { hy: "Ես այսօր աշխատում եմ", en: "I work today", ru: "Я сегодня работаю" },
-    { hy: "Առավոտյան ես ուտում եմ", en: "I eat in the morning", ru: "Утром я ем" },
-  ],
   city: [
-    { hy: "Խանութը մոտ է", en: "The shop is near", ru: "Магазин близко" },
-    { hy: "Հիվանդանոցը ձախ է", en: "The hospital is on the left", ru: "Больница налево" },
+    { hy: "Դպրոցը մոտ է", en: "The school is near", ru: "Школа близко" },
+    { hy: "բանկը կողքին է", en: "The bank is next to the park", ru: "Банк рядом с парком" },
+    { hy: "Խանութը ձախ է", en: "The shop is on the left", ru: "Магазин налево" },
+    { hy: "Այգին քաղաքում է", en: "The park is in the city", ru: "Парк в городе" },
   ],
   travel: [
     { hy: "Ինձ տոմս է պետք", en: "I need a ticket", ru: "Мне нужен билет" },
-    { hy: "Կայարանը հեռու չէ", en: "The station is not far", ru: "Вокзал не далеко" },
-  ],
-  shopping: [
-    { hy: "Ես ուզում եմ հաց գնել", en: "I want to buy bread", ru: "Я хочу купить хлеб" },
-    { hy: "Այս հագուստը թանկ է", en: "These clothes are expensive", ru: "Эта одежда дорогая" },
+    { hy: "Ինձ անձնագիր է պետք", en: "I need a passport", ru: "Мне нужен паспорт" },
+    { hy: "Օդանավակայանը հեռու է", en: "The airport is far", ru: "Аэропорт далеко" },
+    { hy: "Ես ավտոբուս եմ նստում", en: "I take the bus", ru: "Я еду на автобусе" },
   ],
   past: [
     { hy: "Երեկ ես տանն էի", en: "Yesterday I was at home", ru: "Вчера я был дома" },
+    { hy: "Ես դպրոց չգնացի", en: "I did not go to school", ru: "Я не пошёл в школу" },
+    { hy: "Դու տեսար իմ ընկերոջը", en: "Did you see my friend", ru: "Ты видел моего друга" },
+    { hy: "Երեկ ես աշխատեցի", en: "Yesterday I worked", ru: "Вчера я работал" },
     { hy: "Անցյալ շաբաթ ես գնացի դպրոց", en: "Last week I went to school", ru: "На прошлой неделе я пошёл в школу" },
   ],
   future: [
     { hy: "Վաղը ես տուն կգնամ", en: "Tomorrow I will go home", ru: "Завтра я пойду домой" },
-    { hy: "Հաջորդ շաբաթ ես կարող եմ գալ", en: "Next week I can come", ru: "На следующей неделе я могу прийти" },
+    { hy: "Ես պատրաստվում եմ տուն գնալ", en: "I am going to go home", ru: "Я собираюсь пойти домой" },
+    { hy: "Ես ուշ չեմ լինի", en: "I will not be late", ru: "Я не буду поздно" },
+    { hy: "Ես պետք է գնամ", en: "I must go", ru: "Я должен идти" },
+    { hy: "Ես պետք է որ հանգստանամ", en: "I should rest", ru: "Мне следует отдохнуть" },
+  ],
+  compare: [
+    { hy: "Այս հացը ավելի էժան է", en: "This bread is cheaper", ru: "Этот хлеб дешевле" },
+    { hy: "Այս հյուրանոցը ավելի թանկ է", en: "This hotel is more expensive", ru: "Эта гостиница более дорогая" },
+    { hy: "Այս հացը էժան է քան այդը", en: "This bread is cheaper than that", ru: "Этот хлеб дешевле чем тот" },
+    { hy: "Այս սենյակը ավելի փոքր է", en: "This room is smaller", ru: "Эта комната меньше" },
+    { hy: "Այս հյուրանոցը շատ թանկ է", en: "This hotel is too expensive", ru: "Эта гостиница слишком дорогая" },
+  ],
+  invites: [
+    { hy: "Կուզես թեյ", en: "Would you like tea", ru: "Хотел бы ты чай" },
+    { hy: "Եկ գնանք այգի", en: "Let us go to the park", ru: "Давай пойдём в парк" },
+    { hy: "Ազատ ես վաղը", en: "Are you free tomorrow", ru: "Ты свободен завтра" },
+    { hy: "Ես վաղը ազատ եմ", en: "I am free tomorrow", ru: "Я завтра свободен" },
+    { hy: "Այդ լավ է հնչում", en: "That sounds good", ru: "Это звучит хорошо" },
   ],
 };

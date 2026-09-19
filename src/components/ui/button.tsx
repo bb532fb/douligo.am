@@ -36,7 +36,7 @@ export function Button({
 
   if (href) {
     return (
-      <Link href={href} className={classes} aria-disabled={disabled || loading} prefetch>
+      <Link href={href} className={classes} aria-disabled={disabled || loading || undefined}>
         {content}
       </Link>
     );

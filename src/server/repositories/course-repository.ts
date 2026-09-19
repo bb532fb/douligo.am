@@ -26,6 +26,14 @@ export const courseRepository = {
     });
   },
 
+  getLatestEnrollment(userId: string) {
+    return prisma.userCourseEnrollment.findFirst({
+      where: { userId },
+      include: { course: true },
+      orderBy: { createdAt: "desc" },
+    });
+  },
+
   listEnrollments(userId: string) {
     return prisma.userCourseEnrollment.findMany({
       where: { userId },

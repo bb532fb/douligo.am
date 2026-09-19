@@ -6,15 +6,16 @@ type StatsRowProps = {
   streak: number;
   xp: number;
   hearts: number;
+  heartsMax: number;
   dict: Dictionary;
 };
 
-export function StatsRow({ streak, xp, hearts, dict }: StatsRowProps) {
+export function StatsRow({ streak, xp, hearts, heartsMax, dict }: StatsRowProps) {
   return (
     <div className="grid grid-cols-3 gap-3">
       <StatChip icon={<Flame className="h-5 w-5 fill-clay text-clay" />} value={String(streak)} label={dict.learn.streak} tone="text-clay" />
       <StatChip icon={<Star className="h-5 w-5 fill-gold text-gold-dark" />} value={String(xp)} label="XP" tone="text-gold-dark" />
-      <StatChip icon={<Heart className="h-5 w-5 fill-rose text-rose" />} value={`${hearts}/5`} label={dict.learn.hearts} tone="text-rose" />
+      <StatChip icon={<Heart className="h-5 w-5 fill-rose text-rose" />} value={`${hearts}/${heartsMax}`} label={dict.learn.hearts} tone="text-rose" />
     </div>
   );
 }

@@ -7,7 +7,11 @@ import { hasLocale, type Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { withLocale } from "@/i18n/path";
 import type { Dictionary } from "@/i18n/types";
-import type { CourseSlug } from "@/lib/constants/app";
+import { getOptionalUser } from "@/lib/auth/session";
+import { APP_NAME, type CourseSlug } from "@/lib/constants/app";
+import { startCourseAction } from "@/server/actions/course-actions";
+import { courseService } from "@/server/services/course-service";
+import { cn } from "@/lib/utils/cn";
 
 const PAIRS: { slug: CourseSlug; flag: string; to: string; smile: string }[] = [
   { slug: "hy-en", flag: "🇦🇲", to: "🇬🇧", smile: "🌟" },
@@ -22,45 +26,54 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
     return null;
   }
   const dict = await getDictionary(lang);
+  const user = await getOptionalUser();
+  const signedIn = Boolean(user);
+  const active = user ? await courseService.requireActiveCourse(user.id) : null;
 
   return (
     <div className="mx-auto flex min-h-full max-w-5xl flex-col px-4 py-6 sm:px-6">
-      <HomeHeader lang={lang} dict={dict} />
+      <HomeHeader lang={lang} dict={dict} signedIn={signedIn} />
       <main className="flex flex-1 flex-col justify-center gap-12 py-10">
-        <HomeHero lang={lang} dict={dict} />
-        <HomePairs dict={dict} />
+        <HomeHero lang={lang} dict={dict} signedIn={signedIn} />
+        <HomePairs dict={dict} activeSlug={active?.slug ?? null} />
       </main>
     </div>
   );
 }
 
-function HomeHeader({ lang, dict }: { lang: Locale; dict: Dictionary }) {
+function HomeHeader({ lang, dict, signedIn }: { lang: Locale; dict: Dictionary; signedIn: boolean }) {
   return (
     <header className="flex items-center justify-between gap-3">
       <Logo />
       <div className="flex flex-wrap items-center justify-end gap-2">
         <LocaleSwitcher />
-        <Button variant="ghost" href={withLocale(lang, "/login")}>
-          {dict.auth.login}
-        </Button>
-        <Button href={withLocale(lang, "/register")}>{dict.auth.register}</Button>
+        {signedIn ? (
+          <Button href={withLocale(lang, "/learn")}>{dict.learn.continueLearning}</Button>
+        ) : (
+          <>
+            <Button variant="ghost" href={withLocale(lang, "/login")}>
+              {dict.auth.login}
+            </Button>
+            <Button href={withLocale(lang, "/register")}>{dict.auth.register}</Button>
+          </>
+        )}
       </div>
     </header>
   );
 }
 
-function HomeHero({ lang, dict }: { lang: Locale; dict: Dictionary }) {
+function HomeHero({ lang, dict, signedIn }: { lang: Locale; dict: Dictionary; signedIn: boolean }) {
   return (
     <div className="grid items-center gap-8 lg:grid-cols-[1.1fr_0.9fr]">
       <div className="space-y-5">
         <p className="inline-flex rounded-full bg-gold-soft px-4 py-1 text-sm font-extrabold text-clay-dark">
           😊 {dict.home.badge}
         </p>
-        <h1 className="text-4xl font-black leading-tight sm:text-6xl">Lezu</h1>
+        <h1 className="text-4xl font-black leading-tight sm:text-6xl">{APP_NAME}</h1>
         <p className="text-xl font-bold text-ink-soft">{dict.home.tagline}</p>
         <p className="max-w-lg font-semibold text-ink-soft">{dict.home.lead}</p>
-        <Button className="w-full sm:w-auto" href={withLocale(lang, "/register")}>
-          {dict.auth.register} ✨
+        <Button className="w-full sm:w-auto" href={withLocale(lang, signedIn ? "/learn" : "/register")}>
+          {signedIn ? dict.learn.continueLearning : `${dict.auth.register} ✨`}
         </Button>
       </div>
       <div className="flex justify-center">
@@ -70,24 +83,43 @@ function HomeHero({ lang, dict }: { lang: Locale; dict: Dictionary }) {
   );
 }
 
-function HomePairs({ dict }: { dict: Dictionary }) {
+function HomePairs({ dict, activeSlug }: { dict: Dictionary; activeSlug: string | null }) {
   return (
     <ul className="grid gap-4 sm:grid-cols-2">
       {PAIRS.map((pair) => (
         <li key={pair.slug}>
-          <Card className="flex items-center gap-4 transition hover:-translate-y-0.5">
-            <span className="flex h-16 w-16 items-center justify-center rounded-3xl bg-brand-soft text-3xl" aria-hidden="true">
-              {pair.smile}
-            </span>
-            <div>
-              <p className="text-2xl font-black">
-                {pair.flag} → {pair.to}
-              </p>
-              <p className="mt-1 font-extrabold">{dict.home.pairs[pair.slug]}</p>
-            </div>
-          </Card>
+          <HomePairCard pair={pair} label={dict.home.pairs[pair.slug]} current={activeSlug === pair.slug} />
         </li>
       ))}
     </ul>
+  );
+}
+
+function HomePairCard({
+  pair,
+  label,
+  current,
+}: {
+  pair: (typeof PAIRS)[number];
+  label: string;
+  current: boolean;
+}) {
+  return (
+    <form action={startCourseAction}>
+      <input type="hidden" name="slug" value={pair.slug} />
+      <button type="submit" className="w-full touch-manipulation text-left">
+        <Card className={cn("flex items-center gap-4", current && "border-brand")}>
+          <span className="flex h-16 w-16 items-center justify-center rounded-3xl bg-brand-soft text-3xl" aria-hidden="true">
+            {pair.smile}
+          </span>
+          <div>
+            <p className="text-2xl font-black">
+              {pair.flag} → {pair.to}
+            </p>
+            <p className="mt-1 font-extrabold">{label}</p>
+          </div>
+        </Card>
+      </button>
+    </form>
   );
 }

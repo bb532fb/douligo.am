@@ -52,9 +52,9 @@ const ACHIEVEMENTS: Array<{
 ];
 
 const DEMO_USERS = [
-  { name: "Անի", email: "ani@lezu.app", xp: 820 },
-  { name: "Արմեն", email: "armen@lezu.app", xp: 760 },
-  { name: "Դավիթ", email: "david@lezu.app", xp: 710 },
+  { name: "Անի", email: "ani@lezoo.app", xp: 820 },
+  { name: "Արմեն", email: "armen@lezoo.app", xp: 760 },
+  { name: "Դավիթ", email: "david@lezoo.app", xp: 710 },
 ];
 
 async function seedCourses() {
@@ -85,6 +85,51 @@ async function seedAchievements() {
       create: achievement,
     });
   }
+}
+
+async function seedAppSettings() {
+  await prisma.appSettings.upsert({
+    where: { id: "default" },
+    update: {},
+    create: { id: "default", heartsMax: 5 },
+  });
+}
+
+async function seedAdminUser() {
+  const passwordHash = await hashPassword("Password123");
+  const email = (process.env.ADMIN_EMAIL ?? "admin@lezoo.app").toLowerCase();
+  const user = await prisma.user.upsert({
+    where: { email },
+    update: { role: "ADMIN", status: "ACTIVE" },
+    create: {
+      email,
+      name: "Admin",
+      passwordHash,
+      role: "ADMIN",
+      status: "ACTIVE",
+      profile: {
+        create: {
+          displayName: "Admin",
+          nativeLanguage: "HY",
+        },
+      },
+      streak: { create: {} },
+    },
+  });
+  const firstCourse = await prisma.course.findUnique({ where: { slug: "hy-en" } });
+  if (!firstCourse) {
+    return;
+  }
+  await prisma.userCourseEnrollment.upsert({
+    where: { userId_courseId: { userId: user.id, courseId: firstCourse.id } },
+    update: { isActive: true },
+    create: { userId: user.id, courseId: firstCourse.id, isActive: true },
+  });
+  await prisma.userProgress.upsert({
+    where: { userId_courseId: { userId: user.id, courseId: firstCourse.id } },
+    update: {},
+    create: { userId: user.id, courseId: firstCourse.id },
+  });
 }
 
 async function seedDemoUsers() {
@@ -140,6 +185,12 @@ async function seedDemoUsers() {
 }
 
 async function main() {
+  await prisma.reviewItem.deleteMany();
+  await prisma.assessmentAttempt.deleteMany();
+  await prisma.topicMastery.deleteMany();
+  await prisma.skillMastery.deleteMany();
+  await prisma.levelMastery.deleteMany();
+  await prisma.lessonTopic.deleteMany();
   await prisma.userAnswer.deleteMany();
   await prisma.lessonAttempt.deleteMany();
   await prisma.lessonVocabulary.deleteMany();
@@ -160,6 +211,8 @@ async function main() {
 
   await seedCourses();
   await seedAchievements();
+  await seedAppSettings();
+  await seedAdminUser();
   await seedDemoUsers();
 }
 

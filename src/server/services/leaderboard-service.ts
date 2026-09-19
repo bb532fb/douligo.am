@@ -1,4 +1,5 @@
 import { CACHE_TTL_SEC, remember, weeklyLeaderboardKey } from "@/lib/cache/remember";
+import { APP_NAME } from "@/lib/constants/app";
 import { prisma } from "@/lib/db/prisma";
 import { startOfUtcWeek } from "@/lib/utils/date";
 
@@ -42,7 +43,7 @@ async function loadWeeklyRows(): Promise<WeeklyRow[]> {
     return {
       rank: index + 1,
       userId: item.userId,
-      name: user?.profile?.displayName ?? user?.name ?? "Lezu",
+      name: user?.profile?.displayName ?? user?.name ?? APP_NAME,
       avatar: user?.avatar ?? null,
       xp: item._sum.amount ?? 0,
     };

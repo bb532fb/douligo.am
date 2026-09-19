@@ -1,16 +1,19 @@
-import { HEARTS_MAX } from "@/lib/constants/app";
 import { APP_ERRORS } from "@/lib/constants/copy";
-import { loseHeart, refillHeartsIfNeeded } from "@/lib/gamification/hearts";
+import { addHearts, clampHearts, loseHeart, refillHeartsIfNeeded } from "@/lib/gamification/hearts";
 import { nextStreak } from "@/lib/gamification/streak";
 import { dailyGoalBonus, levelFromTotalXp, shouldAwardDailyGoal } from "@/lib/gamification/xp";
 import { AppError } from "@/lib/errors/app-error";
 import { gamificationRepository } from "@/server/repositories/gamification-repository";
+import { settingsService } from "@/server/services/settings-service";
 import type { XpSource } from "@prisma/client";
 
 export const gamificationService = {
   async syncHearts(userId: string) {
-    const profile = await gamificationRepository.getProfile(userId);
-    const refill = refillHeartsIfNeeded(profile.hearts, profile.heartsRefilledAt, new Date());
+    const [profile, max] = await Promise.all([
+      gamificationRepository.getProfile(userId),
+      settingsService.getHeartsMax(),
+    ]);
+    const refill = refillHeartsIfNeeded(profile.hearts, profile.heartsRefilledAt, new Date(), max);
     if (refill.refilled) {
       await gamificationRepository.updateHearts(userId, refill.hearts, new Date());
     }
@@ -30,6 +33,18 @@ export const gamificationService = {
     const next = loseHeart(hearts);
     await gamificationRepository.updateHearts(userId, next);
     return next;
+  },
+
+  async setHearts(userId: string, hearts: number) {
+    const max = await settingsService.getHeartsMax();
+    const next = clampHearts(hearts, max);
+    await gamificationRepository.updateHearts(userId, next, new Date());
+    return next;
+  },
+
+  async adjustHearts(userId: string, delta: number) {
+    const [current, max] = await Promise.all([this.syncHearts(userId), settingsService.getHeartsMax()]);
+    return this.setHearts(userId, addHearts(current, delta, max));
   },
 
   async awardXp(input: { userId: string; amount: number; source: XpSource; sourceId: string }) {
@@ -78,5 +93,3 @@ export const gamificationService = {
     return { ...goal, bonusAwarded: false };
   },
 };
-
-export { HEARTS_MAX };

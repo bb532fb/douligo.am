@@ -3,21 +3,30 @@ import { AppError } from "@/lib/errors/app-error";
 import { firstIndexForLevel, isLessonUnlocked } from "@/lib/learning/unlock";
 import { attemptRepository } from "@/server/repositories/attempt-repository";
 
-type UnlockRow = { id: string; unit: { level: string } };
+type UnlockRow = { id: string; kind?: string; unit: { level: string } };
 
 export async function assertUnlocked(
   lessonId: string,
   ordered: UnlockRow[],
   completed: Array<{ lessonId: string }>,
   startLevel: string,
+  accessibleLevels?: Set<string>,
 ) {
-  const gated = ordered.map((item) => ({ id: item.id, level: item.unit.level }));
+  const lesson = ordered.find((item) => item.id === lessonId);
+  if (lesson?.kind === "REVIEW" && accessibleLevels?.has(lesson.unit.level)) {
+    return;
+  }
+  if (lesson?.kind === "ASSESSMENT" && accessibleLevels?.has(lesson.unit.level)) {
+    return;
+  }
+  const gated = ordered.map((item) => ({ id: item.id, level: item.unit.level, kind: item.kind }));
   const startIndex = firstIndexForLevel(gated, startLevel);
   const unlocked = isLessonUnlocked(
     gated,
     new Set(completed.map((item) => item.lessonId)),
     lessonId,
     startIndex,
+    accessibleLevels,
   );
   if (!unlocked) {
     throw new AppError("LOCKED", APP_ERRORS.lessonLocked, 403);

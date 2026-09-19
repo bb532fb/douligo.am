@@ -1,6 +1,8 @@
-export const APP_NAME = "Lezu";
+export const APP_NAME = "Lezoo";
 
 export const HEARTS_MAX = 5;
+export const HEARTS_MAX_MIN = 1;
+export const HEARTS_MAX_LIMIT = 99;
 export const XP_CORRECT_ANSWER = 2;
 export const XP_LESSON_COMPLETE = 20;
 export const XP_DAILY_GOAL = 50;
@@ -20,3 +22,7 @@ export const CEFR_LEVELS = ["A1", "A2", "B1"] as const;
 
 export type CourseSlug = (typeof COURSE_SLUGS)[number];
 export type CefrLevel = (typeof CEFR_LEVELS)[number];
+
+export function isCourseSlug(value: string): value is CourseSlug {
+  return (COURSE_SLUGS as readonly string[]).includes(value);
+}

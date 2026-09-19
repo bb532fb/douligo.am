@@ -1,3 +1,4 @@
+import type { SkillType } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 
 export const attemptRepository = {
@@ -21,6 +22,7 @@ export const attemptRepository = {
         lessonId: true,
         completedAt: true,
         questionIds: true,
+        lesson: { select: { kind: true } },
       },
     });
   },
@@ -49,8 +51,18 @@ export const attemptRepository = {
     questionId: string;
     answer: string;
     isCorrect: boolean;
+    timeSpentMs?: number | null;
+    attemptNumber: number;
+    skillType?: SkillType | null;
+    topicId?: string | null;
+    unitId?: string | null;
+    levelKey?: string | null;
   }) {
     return prisma.userAnswer.create({ data: input });
+  },
+
+  countQuestionAnswers(userId: string, questionId: string) {
+    return prisma.userAnswer.count({ where: { userId, questionId } });
   },
 
   complete(id: string, score: number, xpAwarded: number) {

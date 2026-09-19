@@ -25,6 +25,7 @@ export const submitAnswerSchema = z.object({
   attemptId: z.string().min(1),
   questionId: z.string().min(1),
   answer: answerPayloadSchema,
+  timeSpentMs: z.number().int().min(0).max(300_000).optional(),
 });
 
 export const startLessonSchema = z.object({

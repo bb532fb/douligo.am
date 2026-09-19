@@ -40,6 +40,7 @@ export async function submitAnswerAction(input: unknown) {
         parsed.data.attemptId,
         parsed.data.questionId,
         parsed.data.answer,
+        parsed.data.timeSpentMs,
       ),
     };
   } catch (error) {

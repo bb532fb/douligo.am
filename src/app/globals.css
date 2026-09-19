@@ -94,11 +94,13 @@ body {
 .tap-target {
   min-height: var(--tap);
   min-width: var(--tap);
+  touch-action: manipulation;
 }
 
 .pressable {
   border-bottom-width: 4px;
   border-bottom-style: solid;
+  touch-action: manipulation;
   transition:
     transform 80ms ease,
     border-bottom-width 80ms ease,

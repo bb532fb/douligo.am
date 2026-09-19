@@ -27,8 +27,19 @@ function createPrisma(): PrismaClient {
   });
 }
 
-export const prisma = globalForPrisma.prisma ?? createPrisma();
-
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
+function getClient(): PrismaClient {
+  const cached = globalForPrisma.prisma;
+  if (cached?.appSettings) {
+    return cached;
+  }
+  if (cached) {
+    void cached.$disconnect();
+  }
+  const client = createPrisma();
+  if (process.env.NODE_ENV !== "production") {
+    globalForPrisma.prisma = client;
+  }
+  return client;
 }
+
+export const prisma = getClient();

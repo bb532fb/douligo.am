@@ -1,18 +1,22 @@
 import { APP_ERRORS } from "@/lib/constants/copy";
 import { calculateLessonXp } from "@/lib/gamification/xp";
-import { nextMastery } from "@/lib/gamification/mastery";
 import { AppError } from "@/lib/errors/app-error";
-import { firstIncompleteLesson, firstIndexForLevel, isLessonUnlocked } from "@/lib/learning/unlock";
+import { firstIncompleteLesson, firstIndexForLevel, isLessonUnlocked, unitsFromStartLevel } from "@/lib/learning/unlock";
 import { revealCorrectAnswer, toPublicQuestion } from "@/lib/learning/to-public-question";
 import { validateAnswer } from "@/lib/learning/validate-answer";
 import type { AnswerPayload, PathUnit } from "@/types/learning";
 import { rememberCatalog } from "@/lib/cache/remember";
+import { prisma } from "@/lib/db/prisma";
 import { attemptRepository } from "@/server/repositories/attempt-repository";
 import { lessonRepository } from "@/server/repositories/lesson-repository";
 import { progressRepository } from "@/server/repositories/progress-repository";
 import { vocabularyRepository } from "@/server/repositories/vocabulary-repository";
 import { gamificationService } from "@/server/services/gamification-service";
 import { assertUnlocked, resolveAttemptId, resumeIndexOf } from "@/server/services/lesson-start";
+import { questionsForLesson } from "@/server/services/lesson-session";
+import { assessmentService } from "@/server/services/assessment-service";
+import { levelUnlockService } from "@/server/services/level-unlock-service";
+import { recordLessonAnswer, updateLessonVocabulary } from "@/server/services/lesson-progress";
 
 export const lessonService = {
   async getLearningPath(userId: string, courseId: string): Promise<PathUnit[]> {
@@ -21,26 +25,36 @@ export const lessonService = {
       progressRepository.listCompletedLessonIds(userId, courseId),
       progressRepository.getCourseProgress(userId, courseId),
     ]);
+    const startLevel = progress?.startLevel ?? "A1";
+    const accessible = await levelUnlockService.accessibleLevels(userId, courseId, startLevel);
     const completedIds = new Set(completed.map((item) => item.lessonId));
-    const ordered = units.flatMap((unit) => unit.lessons.map((lesson) => ({ id: lesson.id, level: unit.level })));
-    const startIndex = firstIndexForLevel(ordered, progress?.startLevel ?? "A1");
-    const currentId = firstIncompleteLesson(ordered, completedIds, startIndex);
+    const visible = unitsFromStartLevel(units, startLevel);
+    const ordered = visible.flatMap((unit) =>
+      unit.lessons
+        .filter((lesson) => lesson.kind === "STANDARD")
+        .map((lesson) => ({ id: lesson.id, level: unit.level, kind: lesson.kind })),
+    );
+    const startIndex = firstIndexForLevel(ordered, startLevel);
+    const studying = levelUnlockService.studyingLevel(startLevel, accessible);
+    const currentId = firstIncompleteLesson(ordered, completedIds, startIndex, studying, accessible);
 
-    return units.map((unit) => ({
+    return visible.map((unit) => ({
       id: unit.id,
       title: unit.title,
       description: unit.description,
       order: unit.order,
       level: unit.level,
-      lessons: unit.lessons.map((lesson) => ({
-        id: lesson.id,
-        title: lesson.title,
-        description: lesson.description,
-        order: lesson.order,
-        estimatedMinutes: lesson.estimatedMinutes,
-        xpReward: lesson.xpReward,
-        status: pathStatus(lesson.id, completedIds, currentId, ordered, startIndex),
-      })),
+      lessons: unit.lessons
+        .filter((lesson) => lesson.kind === "STANDARD")
+        .map((lesson) => ({
+          id: lesson.id,
+          title: lesson.title,
+          description: lesson.description,
+          order: lesson.order,
+          estimatedMinutes: lesson.estimatedMinutes,
+          xpReward: lesson.xpReward,
+          status: pathStatus(lesson.id, completedIds, currentId, ordered, startIndex, accessible),
+        })),
     }));
   },
 
@@ -58,14 +72,28 @@ export const lessonService = {
       attemptRepository.findOpen(userId, lessonId),
       gamificationService.requireHearts(userId),
     ]);
-    await assertUnlocked(lessonId, ordered, completed, progress?.startLevel ?? "A1");
+    const startLevel = progress?.startLevel ?? "A1";
+    const accessible = await levelUnlockService.accessibleLevels(userId, courseId, startLevel);
+    await assertUnlocked(lessonId, ordered, completed, startLevel, accessible);
 
     const langs = {
       sourceLanguage: lesson.unit.course.sourceLanguage,
       targetLanguage: lesson.unit.course.targetLanguage,
     };
-    const questions = lesson.questions.map((question) => toPublicQuestion(question, langs));
-    const attemptId = await resolveAttemptId(open?.id, userId, lessonId, lesson.questions);
+    const selected = await questionsForLesson(
+      userId,
+      {
+        kind: lesson.kind,
+        unit: { courseId: lesson.unit.courseId, level: lesson.unit.level },
+        questions: lesson.questions as Parameters<typeof questionsForLesson>[1]["questions"],
+      },
+      open?.questionIds,
+    );
+    if (selected.length === 0) {
+      throw new AppError("NOT_FOUND", APP_ERRORS.notFound, 404);
+    }
+    const questions = selected.map((question) => toPublicQuestion(question, langs));
+    const attemptId = await resolveAttemptId(open?.id, userId, lessonId, selected);
 
     return {
       attemptId,
@@ -80,7 +108,13 @@ export const lessonService = {
     };
   },
 
-  async submitAnswer(userId: string, attemptId: string, questionId: string, answer: AnswerPayload) {
+  async submitAnswer(
+    userId: string,
+    attemptId: string,
+    questionId: string,
+    answer: AnswerPayload,
+    timeSpentMs?: number,
+  ) {
     const [attempt, existing, question] = await Promise.all([
       attemptRepository.findForSubmit(attemptId),
       attemptRepository.findAnswer(attemptId, questionId),
@@ -103,13 +137,18 @@ export const lessonService = {
     const hearts = result.isCorrect
       ? await gamificationService.syncHearts(userId)
       : await gamificationService.applyWrongAnswer(userId);
-    await attemptRepository.createAnswer({
-      attemptId,
-      userId,
-      questionId,
-      answer: result.storedAnswer,
-      isCorrect: result.isCorrect,
-    });
+    await prisma.$transaction((tx) =>
+      recordLessonAnswer({
+        tx,
+        userId,
+        attemptId,
+        question,
+        storedAnswer: result.storedAnswer,
+        isCorrect: result.isCorrect,
+        timeSpentMs,
+        isReview: attempt.lesson?.kind === "REVIEW",
+      }),
+    );
 
     return {
       isCorrect: result.isCorrect,
@@ -155,9 +194,23 @@ export const lessonService = {
     });
 
     await attemptRepository.complete(attempt.id, score, answerAward.awarded);
-    await progressRepository.upsertLessonCompletion({ userId, lessonId: lesson.id, score });
+    if (lesson.kind === "STANDARD") {
+      await progressRepository.upsertLessonCompletion({ userId, lessonId: lesson.id, score });
+      await levelUnlockService.tryUnlockNext(userId, lesson.unit.courseId, lesson.unit.level);
+    }
+    if (lesson.kind === "ASSESSMENT") {
+      await assessmentService.recordCompletion({
+        userId,
+        courseId: lesson.unit.courseId,
+        levelKey: lesson.unit.level,
+        lessonId: lesson.id,
+        attemptId: attempt.id,
+        questionIds: attempt.questionIds,
+        score,
+      });
+    }
 
-    const wordsLearned = await updateVocabulary(userId, lesson, attempt.answers);
+    const wordsLearned = await updateLessonVocabulary(userId, lesson, attempt.answers);
     await refreshCourseProgress(userId, lesson.unit.courseId);
     const streak = await gamificationService.applyStreak(userId);
     await gamificationService.applyDailyGoal(userId, answerAward.awarded);
@@ -173,42 +226,22 @@ export const lessonService = {
   },
 };
 
-type FullLesson = NonNullable<Awaited<ReturnType<typeof lessonRepository.findById>>>;
-
-async function updateVocabulary(
-  this: void,
-  userId: string,
-  lesson: FullLesson,
-  answers: Array<{ isCorrect: boolean }>,
-) {
-  const mostlyCorrect = answers.filter((item) => item.isCorrect).length >= answers.length / 2;
-  let learned = 0;
-  for (const item of lesson.vocabulary) {
-    const current = await vocabularyRepository.listByCourse(userId, lesson.unit.courseId);
-    const existing = current.find((entry) => entry.vocabularyWordId === item.vocabularyWordId);
-    const mastery = nextMastery(existing?.mastery ?? 0, mostlyCorrect);
-    await vocabularyRepository.upsertReview({
-      userId,
-      vocabularyWordId: item.vocabularyWordId,
-      isCorrect: mostlyCorrect,
-      mastery,
-    });
-    learned += 1;
-  }
-  return learned;
-}
-
 async function refreshCourseProgress(userId: string, courseId: string) {
   const ordered = await lessonRepository.listCourseLessons(courseId);
   const [completed, progress] = await Promise.all([
     progressRepository.listCompletedLessonIds(userId, courseId),
     progressRepository.getCourseProgress(userId, courseId),
   ]);
+  const startLevel = progress?.startLevel ?? "A1";
+  const accessible = await levelUnlockService.accessibleLevels(userId, courseId, startLevel);
   const completedIds = new Set(completed.map((item) => item.lessonId));
-  const gated = ordered.map((item) => ({ id: item.id, level: item.unit.level }));
-  const startIndex = firstIndexForLevel(gated, progress?.startLevel ?? "A1");
-  const currentId = firstIncompleteLesson(gated, completedIds, startIndex);
-  const current = ordered.find((lesson) => lesson.id === currentId) ?? ordered.at(-1);
+  const gated = ordered
+    .filter((item) => item.kind === "STANDARD")
+    .map((item) => ({ id: item.id, level: item.unit.level, kind: item.kind }));
+  const startIndex = firstIndexForLevel(gated, startLevel);
+  const studying = levelUnlockService.studyingLevel(startLevel, accessible);
+  const currentId = firstIncompleteLesson(gated, completedIds, startIndex, studying, accessible);
+  const current = ordered.find((lesson) => lesson.id === currentId) ?? ordered.find((item) => item.kind === "STANDARD");
   const words = await vocabularyRepository.countLearned(userId, courseId);
   if (!current) {
     return;
@@ -219,7 +252,7 @@ async function refreshCourseProgress(userId: string, courseId: string) {
     courseId,
     currentUnitId: current.unitId,
     currentLessonId: current.id,
-    totalLessonsCompleted: completedIds.size,
+    totalLessonsCompleted: gated.filter((item) => completedIds.has(item.id)).length,
     totalWordsLearned: words,
   });
 }
@@ -228,8 +261,9 @@ function pathStatus(
   lessonId: string,
   completedIds: Set<string>,
   currentId: string | null,
-  ordered: Array<{ id: string; level: string }>,
+  ordered: Array<{ id: string; level: string; kind?: string }>,
   startIndex: number,
+  accessible: Set<string>,
 ): PathUnit["lessons"][number]["status"] {
   if (completedIds.has(lessonId)) {
     return "completed";
@@ -237,7 +271,7 @@ function pathStatus(
   if (lessonId === currentId) {
     return "current";
   }
-  if (isLessonUnlocked(ordered, completedIds, lessonId, startIndex)) {
+  if (isLessonUnlocked(ordered, completedIds, lessonId, startIndex, accessible)) {
     return "available";
   }
   return "locked";

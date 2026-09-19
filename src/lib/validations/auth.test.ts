@@ -5,7 +5,7 @@ describe("registerSchema", () => {
   it("rejects short passwords and mismatches", () => {
     const short = registerSchema.safeParse({
       name: "Ani",
-      email: "ani@lezu.app",
+      email: "ani@lezoo.app",
       password: "123",
       confirmPassword: "123",
     });
@@ -13,19 +13,19 @@ describe("registerSchema", () => {
 
     const mismatch = registerSchema.safeParse({
       name: "Ani",
-      email: "ani@lezu.app",
+      email: "ani@lezoo.app",
       password: "Password1",
       confirmPassword: "Password2",
     });
     expect(mismatch.success).toBe(false);
   });
 
-  it("accepts a valid payload", () => {
+  it("accepts a four-character password of any case or digits", () => {
     const parsed = registerSchema.safeParse({
       name: "Ani",
-      email: "ani@lezu.app",
-      password: "Password1",
-      confirmPassword: "Password1",
+      email: "ani@lezoo.app",
+      password: "ab12",
+      confirmPassword: "ab12",
     });
     expect(parsed.success).toBe(true);
   });
