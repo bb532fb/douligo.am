@@ -121,7 +121,7 @@ function LearnView({
             <p className="mt-1 font-bold text-ink-soft">
               {data.courseTitle} · {data.lessonsCompleted}/{data.lessonsTotal}
               {" · "}
-              <Link href={withLocale(lang, "/")} className="text-teal hover:underline">
+              <Link href={withLocale(lang, "/courses")} className="text-teal hover:underline">
                 {dict.learn.selectCourse}
               </Link>
             </p>
@@ -132,7 +132,7 @@ function LearnView({
         </Button>
       </div>
       <StatsRow streak={data.streak} xp={data.totalXp} hearts={data.hearts} heartsMax={data.heartsMax} dict={dict} />
-      <LevelPicker levels={data.levels} selected={data.startLevel} dict={dict} />
+      <LevelPicker locale={lang} levels={data.levels} selected={data.startLevel} dict={dict} />
       {data.current ? (
         <Button className="w-full sm:w-auto" href={withLocale(lang, `/lesson/${data.current.id}`)}>
           {dict.learn.continueLesson}

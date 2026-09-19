@@ -73,6 +73,9 @@ body {
   min-height: 100%;
   background-color: var(--paper);
   color: var(--ink);
+  touch-action: pan-x pan-y;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -94,13 +97,13 @@ body {
 .tap-target {
   min-height: var(--tap);
   min-width: var(--tap);
-  touch-action: manipulation;
+  touch-action: pan-x pan-y;
 }
 
 .pressable {
   border-bottom-width: 4px;
   border-bottom-style: solid;
-  touch-action: manipulation;
+  touch-action: pan-x pan-y;
   transition:
     transform 80ms ease,
     border-bottom-width 80ms ease,

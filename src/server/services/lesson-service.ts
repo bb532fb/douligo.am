@@ -90,7 +90,7 @@ export const lessonService = {
       open?.questionIds,
     );
     if (selected.length === 0) {
-      throw new AppError("NOT_FOUND", APP_ERRORS.notFound, 404);
+      throw new AppError("VALIDATION", APP_ERRORS.generic, 400);
     }
     const questions = selected.map((question) => toPublicQuestion(question, langs));
     const attemptId = await resolveAttemptId(open?.id, userId, lessonId, selected);

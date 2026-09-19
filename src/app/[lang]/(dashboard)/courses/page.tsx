@@ -3,6 +3,7 @@ import { Mascot } from "@/components/brand/mascot";
 import { requireUser } from "@/lib/auth/session";
 import { hasLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
+import { withLocale } from "@/i18n/path";
 import { isCourseSlug } from "@/lib/constants/app";
 import { courseService } from "@/server/services/course-service";
 
@@ -43,7 +44,7 @@ export default async function CoursesPage({ params }: PageProps<"/[lang]/courses
           return (
             <li key={course.id}>
               <CourseCard
-                slug={course.slug}
+                href={withLocale(lang, `/start/${course.slug}`)}
                 title={slug ? dict.home.pairs[slug] : course.title}
                 lead={slug ? dict.home.pairLeads[slug] : course.description}
                 flag={FLAGS[course.slug] ?? "🌐"}

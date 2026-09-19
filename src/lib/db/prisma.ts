@@ -5,6 +5,13 @@ const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
 };
 
+function pgConnectionString(url: string): string {
+  return url.replace(
+    /([?&]sslmode=)(require|prefer|verify-ca)\b/i,
+    "$1verify-full",
+  );
+}
+
 function createPrisma(): PrismaClient {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
@@ -12,7 +19,7 @@ function createPrisma(): PrismaClient {
   }
 
   const adapter = new PrismaPg({
-    connectionString,
+    connectionString: pgConnectionString(connectionString),
     max: 10,
     idleTimeoutMillis: 30_000,
     connectionTimeoutMillis: 8_000,

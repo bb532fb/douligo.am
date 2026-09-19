@@ -29,7 +29,7 @@ export default async function PlacementPage({ params }: PageProps<"/[lang]/onboa
         <Mascot size={80} mood="wow" />
         <h1 className="text-3xl font-black">{dict.learn.chooseLevel}</h1>
       </div>
-      <LevelPicker levels={placement.levels} dict={dict} variant="cards" />
+      <LevelPicker locale={lang} levels={placement.levels} dict={dict} variant="cards" />
     </div>
   );
 }

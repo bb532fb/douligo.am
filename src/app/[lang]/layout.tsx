@@ -5,6 +5,8 @@ import { LOCALES, LOCALE_META, hasLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { APP_NAME } from "@/lib/constants/app";
 
+export const dynamicParams = true;
+
 export async function generateStaticParams() {
   return LOCALES.map((lang) => ({ lang }));
 }

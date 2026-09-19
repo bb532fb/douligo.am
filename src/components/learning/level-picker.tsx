@@ -1,4 +1,6 @@
-import { setStartLevelAction } from "@/server/actions/course-actions";
+import Link from "next/link";
+import type { Locale } from "@/i18n/config";
+import { withLocale } from "@/i18n/path";
 import { cn } from "@/lib/utils/cn";
 import type { Dictionary } from "@/i18n/types";
 
@@ -9,16 +11,17 @@ const LEVELS = [
 ] as const;
 
 type LevelPickerProps = {
+  locale: Locale;
   levels: string[];
   selected?: string;
   dict: Dictionary;
   variant?: "compact" | "cards";
 };
 
-export function LevelPicker({ levels, selected, dict, variant = "compact" }: LevelPickerProps) {
+export function LevelPicker({ locale, levels, selected, dict, variant = "compact" }: LevelPickerProps) {
   const cards = variant === "cards";
   return (
-    <form action={setStartLevelAction} className="space-y-3">
+    <div className="space-y-3">
       {cards ? (
         <p className="font-semibold text-ink-soft">{dict.learn.chooseLevelLead}</p>
       ) : (
@@ -28,9 +31,9 @@ export function LevelPicker({ levels, selected, dict, variant = "compact" }: Lev
       )}
       <div className={cards ? "grid gap-3" : "flex flex-wrap gap-2"}>
         {LEVELS.filter((level) => levels.includes(level.id)).map((level) => (
-          <LevelButton
+          <LevelLink
             key={level.id}
-            id={level.id}
+            href={withLocale(locale, `/place/${level.id}`)}
             label={dict.learn[level.labelKey]}
             hint={cards ? dict.learn[level.hintKey] : null}
             selected={selected === level.id}
@@ -38,28 +41,26 @@ export function LevelPicker({ levels, selected, dict, variant = "compact" }: Lev
           />
         ))}
       </div>
-    </form>
+    </div>
   );
 }
 
-function LevelButton({
-  id,
+function LevelLink({
+  href,
   label,
   hint,
   selected,
   cards,
 }: {
-  id: string;
+  href: string;
   label: string;
   hint: string | null;
   selected: boolean;
   cards: boolean;
 }) {
   return (
-    <button
-      type="submit"
-      name="startLevel"
-      value={id}
+    <Link
+      href={href}
       className={cn(
         "pressable rounded-2xl border-2 font-extrabold",
         cards ? "space-y-1 px-5 py-4 text-left" : "px-4 py-3 text-sm",
@@ -72,6 +73,6 @@ function LevelButton({
           {hint}
         </span>
       ) : null}
-    </button>
+    </Link>
   );
 }

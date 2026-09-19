@@ -26,3 +26,7 @@ export type CefrLevel = (typeof CEFR_LEVELS)[number];
 export function isCourseSlug(value: string): value is CourseSlug {
   return (COURSE_SLUGS as readonly string[]).includes(value);
 }
+
+export function isCefrLevel(value: string): value is CefrLevel {
+  return (CEFR_LEVELS as readonly string[]).includes(value);
+}

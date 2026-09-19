@@ -14,6 +14,7 @@ const PROTECTED_PREFIXES = [
   "/analytics",
   "/admin",
   "/start",
+  "/place",
 ];
 
 function hasSessionCookie(request: NextRequest): boolean {

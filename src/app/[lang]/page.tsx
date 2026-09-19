@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { LocaleSwitcher } from "@/components/i18n/locale-switcher";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -9,7 +10,6 @@ import { withLocale } from "@/i18n/path";
 import type { Dictionary } from "@/i18n/types";
 import { getOptionalUser } from "@/lib/auth/session";
 import { APP_NAME, type CourseSlug } from "@/lib/constants/app";
-import { startCourseAction } from "@/server/actions/course-actions";
 import { courseService } from "@/server/services/course-service";
 import { cn } from "@/lib/utils/cn";
 
@@ -35,7 +35,7 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
       <HomeHeader lang={lang} dict={dict} signedIn={signedIn} />
       <main className="flex flex-1 flex-col justify-center gap-12 py-10">
         <HomeHero lang={lang} dict={dict} signedIn={signedIn} />
-        <HomePairs dict={dict} activeSlug={active?.slug ?? null} />
+        <HomePairs lang={lang} dict={dict} activeSlug={active?.slug ?? null} />
       </main>
     </div>
   );
@@ -83,12 +83,25 @@ function HomeHero({ lang, dict, signedIn }: { lang: Locale; dict: Dictionary; si
   );
 }
 
-function HomePairs({ dict, activeSlug }: { dict: Dictionary; activeSlug: string | null }) {
+function HomePairs({
+  lang,
+  dict,
+  activeSlug,
+}: {
+  lang: Locale;
+  dict: Dictionary;
+  activeSlug: string | null;
+}) {
   return (
     <ul className="grid gap-4 sm:grid-cols-2">
       {PAIRS.map((pair) => (
         <li key={pair.slug}>
-          <HomePairCard pair={pair} label={dict.home.pairs[pair.slug]} current={activeSlug === pair.slug} />
+          <HomePairCard
+            href={withLocale(lang, `/start/${pair.slug}`)}
+            pair={pair}
+            label={dict.home.pairs[pair.slug]}
+            current={activeSlug === pair.slug}
+          />
         </li>
       ))}
     </ul>
@@ -96,30 +109,29 @@ function HomePairs({ dict, activeSlug }: { dict: Dictionary; activeSlug: string 
 }
 
 function HomePairCard({
+  href,
   pair,
   label,
   current,
 }: {
+  href: string;
   pair: (typeof PAIRS)[number];
   label: string;
   current: boolean;
 }) {
   return (
-    <form action={startCourseAction}>
-      <input type="hidden" name="slug" value={pair.slug} />
-      <button type="submit" className="w-full touch-manipulation text-left">
-        <Card className={cn("flex items-center gap-4", current && "border-brand")}>
-          <span className="flex h-16 w-16 items-center justify-center rounded-3xl bg-brand-soft text-3xl" aria-hidden="true">
-            {pair.smile}
-          </span>
-          <div>
-            <p className="text-2xl font-black">
-              {pair.flag} → {pair.to}
-            </p>
-            <p className="mt-1 font-extrabold">{label}</p>
-          </div>
-        </Card>
-      </button>
-    </form>
+    <Link href={href} className="block w-full touch-manipulation text-left">
+      <Card className={cn("flex items-center gap-4", current && "border-brand")}>
+        <span className="flex h-16 w-16 items-center justify-center rounded-3xl bg-brand-soft text-3xl" aria-hidden="true">
+          {pair.smile}
+        </span>
+        <div>
+          <p className="text-2xl font-black">
+            {pair.flag} → {pair.to}
+          </p>
+          <p className="mt-1 font-extrabold">{label}</p>
+        </div>
+      </Card>
+    </Link>
   );
 }
